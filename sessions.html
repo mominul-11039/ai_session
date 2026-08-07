@@ -59,10 +59,6 @@
   body { background: var(--bg); color: var(--text); font-family: var(--body); font-size: 14px; line-height: 1.6; min-height: 100vh; -webkit-font-smoothing: antialiased; }
   :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 3px; }
 
-  /* Guests read; admins edit. `is-guest` is set on <body> before first paint. */
-  body.is-guest .admin-only { display: none !important; }
-  body:not(.is-guest) .guest-only { display: none !important; }
-
   /* ── Layout ──────────────────────────────────────────── */
   .app { display: grid; grid-template-columns: 288px 1fr; min-height: 100vh; }
   .sidebar { background: var(--bg2); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
@@ -106,20 +102,23 @@
   .sidebar-foot { padding: 14px 14px 18px; border-top: 1px solid var(--border); }
   .sidebar-foot .btn { margin-bottom: 10px; }
 
-  /* ── Auth state ──────────────────────────────────────── */
-  .auth-box { display: flex; align-items: center; gap: 9px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; }
-  .auth-box.is-admin { background: var(--green-dim); border-color: var(--green-bg); }
-  .auth-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); flex-shrink: 0; }
-  .auth-box.is-admin .auth-dot { background: var(--green); box-shadow: 0 0 0 3px rgba(27,122,75,.15); }
-  .auth-text { flex: 1; min-width: 0; }
-  .auth-role { font-size: 11.5px; font-weight: 600; color: var(--text); line-height: 1.3; }
-  .auth-note { font-family: var(--mono); font-size: 9.5px; color: var(--muted); }
-  .auth-btn { font-family: var(--body); font-size: 11px; font-weight: 500; color: var(--muted); background: var(--bg2); border: 1px solid var(--border2); border-radius: 5px; padding: 5px 9px; cursor: pointer; white-space: nowrap; transition: all .15s; }
-  .auth-btn:hover { color: var(--text); border-color: var(--dim); }
-
-  .readonly-chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10.5px; color: var(--muted); background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px; cursor: pointer; transition: all .15s; }
-  .readonly-chip:hover { border-color: var(--border2); color: var(--text); }
-  .readonly-chip b { font-weight: 600; color: var(--text); }
+  /* ── Sheet sync state ────────────────────────────────── */
+  .sync-box { display: flex; align-items: center; gap: 9px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; }
+  .sync-box.ok    { background: var(--green-dim); border-color: var(--green-bg); }
+  .sync-box.warn  { background: var(--amber-dim); border-color: var(--amber-bg); }
+  .sync-box.warn  .sync-dot { background: var(--amber); }
+  .sync-box.busy  { background: var(--blue-dim);  border-color: var(--blue-bg); }
+  .sync-box.error { background: var(--red-dim);   border-color: var(--red-bg); }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); flex-shrink: 0; }
+  .sync-box.ok    .sync-dot { background: var(--green); box-shadow: 0 0 0 3px rgba(27,122,75,.15); }
+  .sync-box.busy  .sync-dot { background: var(--blue); animation: pulse 1.1s ease-in-out infinite; }
+  .sync-box.error .sync-dot { background: var(--red); }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
+  .sync-text { flex: 1; min-width: 0; }
+  .sync-title { font-size: 11.5px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .sync-note { font-family: var(--mono); font-size: 9.5px; color: var(--muted); }
+  .sync-btn { font-family: var(--body); font-size: 11px; font-weight: 500; color: var(--muted); background: var(--bg2); border: 1px solid var(--border2); border-radius: 5px; padding: 5px 9px; cursor: pointer; white-space: nowrap; transition: all .15s; }
+  .sync-btn:hover { color: var(--text); border-color: var(--dim); }
 
   /* ── Buttons ─────────────────────────────────────────── */
   .btn { font-family: var(--body); font-size: 12.5px; font-weight: 500; padding: 9px 15px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg2); color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; transition: all .16s; box-shadow: var(--shadow-sm); white-space: nowrap; }
@@ -241,12 +240,6 @@
   .icon-btn.del:hover { background: var(--red-dim); border-color: var(--red-bg); color: var(--red); }
   .icon-btn.is-on { background: var(--green-dim); border-color: var(--green-bg); color: var(--green); }
 
-  /* Add-session ghost row at the bottom of each board */
-  .add-inline { width: 100%; margin-top: 11px; font-family: var(--body); font-size: 12.5px; font-weight: 500; color: var(--muted); background: transparent; border: 1px dashed var(--border2); border-radius: var(--radius-sm); padding: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all .16s; }
-  .add-inline:hover { color: var(--text); background: var(--bg3); border-style: solid; }
-  .board-infra .add-inline:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
-  .board-ai .add-inline:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-dim); }
-
   /* ── Empty states ────────────────────────────────────── */
   .empty { text-align: center; padding: 26px 16px 22px; border: 1px dashed var(--border); border-radius: var(--radius-sm); background: var(--bg3); }
   .empty-icon { font-size: 22px; opacity: .55; }
@@ -366,8 +359,7 @@
     </nav>
 
     <div class="sidebar-foot">
-      <button class="btn btn-primary btn-full admin-only" onclick="openModal('infra')"><span class="btn-plus">+</span> New session</button>
-      <div id="auth-slot"></div>
+      <div id="sync-slot"></div>
     </div>
   </aside>
 
@@ -380,7 +372,7 @@
       <div class="head-row">
         <div>
           <h1 class="page-title">Sessions</h1>
-          <p class="page-sub">Two parallel tracks — infrastructure work and AI/model work. Schedule a session in either track, mark it done when the room clears.</p>
+          <p class="page-sub">Two parallel tracks — infrastructure work and AI/model work. The schedule is kept in the shared Google Sheet; new sessions are added there.</p>
         </div>
         <div class="head-actions">
           <div class="search-wrap">
@@ -392,10 +384,6 @@
             <button class="seg-btn" data-status="upcoming">Upcoming</button>
             <button class="seg-btn" data-status="done">Done</button>
           </div>
-          <button class="btn btn-primary admin-only" onclick="openModal()"><span class="btn-plus">+</span> Add session</button>
-          <button class="readonly-chip guest-only" onclick="Auth.goToLogin('sessions.html')" title="Sign in to add or edit sessions">
-            👁 <span>View only</span> · <b>Admin login</b>
-          </button>
         </div>
       </div>
     </header>
@@ -413,8 +401,8 @@
   <div class="modal">
     <div class="modal-head">
       <div>
-        <div class="modal-title" id="modal-title">New session</div>
-        <div class="modal-sub" id="modal-sub">Add a session to the program calendar</div>
+        <div class="modal-title" id="modal-title">Edit session</div>
+        <div class="modal-sub" id="modal-sub">Update the details of this session</div>
       </div>
       <button class="btn modal-close" onclick="closeModal()" aria-label="Close">Esc</button>
     </div>
@@ -488,10 +476,10 @@
       </div>
 
       <div class="modal-foot">
-        <button type="button" class="btn btn-danger" id="delete-btn" style="display:none" onclick="deleteCurrent()">Delete</button>
+        <button type="button" class="btn btn-danger" id="delete-btn" onclick="deleteCurrent()">Delete</button>
         <div class="spacer"></div>
         <button type="button" class="btn" onclick="closeModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="save-btn">Save session</button>
+        <button type="submit" class="btn btn-primary" id="save-btn">Save changes</button>
       </div>
     </form>
   </div>
@@ -499,20 +487,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="auth.js"></script>
 <script>
-// ─── ACCESS ──────────────────────────────────────────────────────────────────
-// Read-only for everyone; the admin session unlocks add / edit / delete.
-let isAdmin = Auth.isAdmin();
-document.body.classList.toggle('is-guest', !isAdmin);
-
-/** Blocks a mutation for guests and points them at the login screen. */
-function requireAdmin() {
-  if (isAdmin) return true;
-  toast('Admin access needed', 'Log in', () => Auth.goToLogin('sessions.html'));
-  return false;
-}
-
 // ─── TRACKS ──────────────────────────────────────────────────────────────────
 const TRACKS = {
   infra: { id:'infra', name:'AI Infra Sessions', short:'AI Infra', icon:'🗣️',
@@ -635,27 +610,220 @@ const SEED = [
     ] },
 ];
 
-// ─── STATE ───────────────────────────────────────────────────────────────────
-// Bumped to v2 when the placeholder sessions were replaced with the
-// roadmap-derived ones — v1 data stays stale in browsers otherwise.
+// ─── STORE ───────────────────────────────────────────────────────────────────
+// Sessions live in a Google Sheet, so the schedule is shared by everyone and
+// changing it needs no git push. Two levels of connection — see README.md:
+//
+//   SHEET_ID        read-only. Any link-shared Sheet, no setup at all.
+//   SHEET_ENDPOINT  read AND write, via the Apps Script deployment. Optional;
+//                   set it and the page's edit / delete write to the Sheet.
+//
+// Reads go through a JSONP <script> tag rather than fetch(), because fetch is
+// subject to CORS and Google sends no CORS header to the "null" origin that a
+// file:// page has. Script tags are exempt, so reading works when the page is
+// opened straight off disk as well as when it is served.
+const SHEET_ID = '1eAsfQmkfJoyx7cS9pznR2HbIvbo_QxwMvqudA2A5fCs';
+const SHEET_TAB = 'Sessions';
+const SHEET_ENDPOINT = '';
+
+// Local copy: paints instantly on load, and keeps the page usable offline or
+// before the Sheet is connected.
 const STORAGE_KEY = 'ai-sessions-v2';
-let sessions = load();
+
+let sessions = loadLocal();
 let filters = { track: 'all', status: 'all', q: '' };
 let editingId = null;
 let expanded = new Set();
 let lastDeleted = null;
+const SHEET_SOURCE = (SHEET_ENDPOINT || SHEET_ID) ? (SHEET_ENDPOINT ? 'api' : 'gviz') : 'none';
+// Writing still needs fetch(), so it stays unavailable on file:// pages
+const CAN_WRITE = !!SHEET_ENDPOINT && location.protocol !== 'file:';
+let sync = { state: SHEET_SOURCE === 'none' ? 'off' : 'loading', at: null, error: null };
 
-function load() {
+/** Loads a URL via <script> and resolves with whatever it passes to the
+ *  callback. Not subject to CORS, unlike fetch(). */
+function jsonp(buildUrl, timeoutMs = 15000) {
+  return new Promise((resolve, reject) => {
+    const cb = '__sheet_' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    let settled = false;
+    const cleanup = () => { clearTimeout(timer); delete window[cb]; script.remove(); };
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true; cleanup(); reject(new Error('Timed out reaching the Sheet'));
+    }, timeoutMs);
+    window[cb] = data => { if (settled) return; settled = true; cleanup(); resolve(data); };
+    script.onerror = () => {
+      if (settled) return;
+      settled = true; cleanup();
+      reject(new Error('Could not load the Sheet — is it shared with "anyone with the link"?'));
+    };
+    script.src = buildUrl(cb);
+    document.head.appendChild(script);
+  });
+}
+
+/** gviz returns typed cells: {v: value, f: formatted}. If Sheets has decided a
+ *  column is a date or a time, v arrives as "Date(2026,7,14)" or, for a time,
+ *  "Date(1899,11,30,15,0,0)" — the same shape. Only the column's declared type
+ *  tells the two apart, so it drives the conversion back to plain strings. */
+function gvizValue(cell, type) {
+  if (!cell) return '';
+  const { v, f } = cell;
+  if (v === null || v === undefined) return f == null ? '' : String(f);
+
+  const parts = typeof v === 'string' ? /^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+))?/.exec(v) : null;
+  if (parts && type === 'date') {
+    return `${parts[1]}-${String(+parts[2] + 1).padStart(2, '0')}-${String(+parts[3]).padStart(2, '0')}`;
+  }
+  if (parts && (type === 'datetime' || type === 'timeofday')) {
+    return `${String(parts[4] || 0).padStart(2, '0')}:${String(parts[5] || 0).padStart(2, '0')}`;
+  }
+  if (Array.isArray(v)) {                       // timeofday comes as [h, m, s]
+    const [h = 0, m = 0] = v;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+  if (typeof v === 'string' || typeof v === 'number') return String(v);
+  return f == null ? String(v) : String(f);
+}
+
+function rowsFromGviz(data) {
+  const table = data && data.table;
+  if (!table || !Array.isArray(table.rows)) throw new Error('Unexpected response from the Sheet');
+  const cols = table.cols || [];
+  const head = cols.map((c, i) => String((c && c.label) || (c && c.id) || i).trim());
+  const types = cols.map(c => String((c && c.type) || 'string'));
+  return table.rows
+    .map(r => (r && r.c) || [])
+    .map(cells => Object.fromEntries(head.map((h, i) => [h, gvizValue(cells[i], types[i])])))
+    .filter(o => String(o.id || '').trim() !== '');
+}
+
+function loadLocal() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return SEED.map(s => ({ ...s }));
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : SEED.map(s => ({ ...s }));
+    return Array.isArray(parsed) && parsed.length ? parsed : SEED.map(s => ({ ...s }));
   } catch (e) {
     return SEED.map(s => ({ ...s }));
   }
 }
-function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions)); }
+
+/** Persist locally straight away, then push to the Sheet in the background. */
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+  pushToSheet();
+}
+
+/** Rows come back as flat strings; tags and agenda are stored as text. */
+function normalize(row) {
+  const split = (v, sep) => String(v == null ? '' : v).split(sep).map(x => x.trim()).filter(Boolean);
+  return {
+    id: String(row.id || uid()),
+    track: row.track === 'ai' ? 'ai' : 'infra',
+    title: String(row.title || 'Untitled session'),
+    date: String(row.date || todayISO()).slice(0, 10),
+    start: String(row.start || '10:00').slice(0, 5),
+    duration: Number(row.duration) || 60,
+    host: String(row.host || ''),
+    mode: ['onsite', 'online', 'hybrid'].includes(row.mode) ? row.mode : 'onsite',
+    location: String(row.location || ''),
+    status: ['planned', 'done', 'cancelled'].includes(row.status) ? row.status : 'planned',
+    tags: Array.isArray(row.tags) ? row.tags : split(row.tags, ','),
+    agenda: Array.isArray(row.agenda) ? row.agenda : split(row.agenda, '\n'),
+  };
+}
+
+async function pullFromSheet() {
+  if (SHEET_SOURCE === 'none') return;
+  setSync('loading');
+  try {
+    let list;
+    if (SHEET_SOURCE === 'api') {
+      const data = await jsonp(cb => `${SHEET_ENDPOINT}?callback=${cb}`);
+      if (!data || !Array.isArray(data.sessions)) throw new Error('Unexpected response from the Apps Script');
+      list = data.sessions;
+    } else {
+      list = rowsFromGviz(await jsonp(cb =>
+        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq` +
+        `?headers=1&sheet=${encodeURIComponent(SHEET_TAB)}&tqx=out:json;responseHandler:${cb}`));
+    }
+    // An empty Sheet means "nothing scheduled", not "fall back to the seed"
+    sessions = list.map(normalize);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+    setSync(CAN_WRITE ? 'synced' : 'readonly');
+    render();
+  } catch (err) {
+    setSync('error', err.message);
+    render();
+  }
+}
+
+let pushTimer = null;
+function pushToSheet() {
+  // Without a reachable Apps Script deployment there is nowhere to write back to
+  if (!CAN_WRITE) { setSync('readonly'); return; }
+  clearTimeout(pushTimer);
+  setSync('saving');
+  // Coalesce rapid edits (ticking several checkboxes) into one write
+  pushTimer = setTimeout(async () => {
+    try {
+      const res = await fetch(SHEET_ENDPOINT, {
+        method: 'POST',
+        // text/plain keeps this a "simple request" — Apps Script does not
+        // answer the CORS preflight that application/json would trigger
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ sessions }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data || !data.ok) throw new Error(data && data.error ? data.error : 'Write rejected');
+      setSync('synced');
+    } catch (err) {
+      setSync('error', err.message);
+    }
+    renderSync();
+  }, 600);
+}
+
+function setSync(state, error) {
+  sync.state = state;
+  sync.error = error || null;
+  if (state === 'synced') sync.at = new Date();
+  renderSync();
+}
+
+function readonlyNote() {
+  if (SHEET_ENDPOINT && !CAN_WRITE) return 'Serve over http:// to save edits';
+  return 'Edits stay in this browser';
+}
+
+function renderSync() {
+  const el = document.getElementById('sync-slot');
+  if (!el) return;
+  const time = sync.at ? sync.at.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
+  const view = {
+    off:      { cls: '',      title: 'Local only',        note: 'Not connected to a Sheet',   btn: null },
+    loading:  { cls: 'busy',  title: 'Loading…',          note: 'Reading the Sheet',          btn: null },
+    saving:   { cls: 'busy',  title: 'Saving…',           note: 'Writing to the Sheet',       btn: null },
+    synced:   { cls: 'ok',    title: 'Google Sheet',      note: `Synced ${time}`,             btn: 'Refresh' },
+    readonly: { cls: 'warn',  title: 'Sheet — read only', note: readonlyNote(),               btn: 'Refresh' },
+    error:    { cls: 'error', title: 'Sheet unreachable', note: 'Showing the last known data', btn: 'Retry' },
+  }[sync.state] || {};
+
+  el.innerHTML = `
+    <div class="sync-box ${view.cls}" ${sync.error ? `title="${esc(sync.error)}"` : ''}>
+      <div class="sync-dot"></div>
+      <div class="sync-text">
+        <div class="sync-title">${esc(view.title)}</div>
+        <div class="sync-note">${esc(view.note)}</div>
+      </div>
+      ${view.btn ? `<button class="sync-btn" id="sync-action">${view.btn}</button>` : ''}
+    </div>`;
+  const btn = el.querySelector('#sync-action');
+  if (btn) btn.onclick = pullFromSheet;
+}
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function esc(s) {
@@ -928,12 +1096,11 @@ function sessionCard(s) {
           </div>` : ''}
       </div>
 
-      ${isAdmin ? `
-        <div class="s-actions">
-          <button class="icon-btn ok${isDone ? ' is-on' : ''}" title="${isDone ? 'Mark as not done' : 'Mark complete'}" onclick="toggleDone('${esc(s.id)}')">✓</button>
-          <button class="icon-btn" title="Edit session" onclick="openModal(null,'${esc(s.id)}')">✎</button>
-          <button class="icon-btn del" title="Delete session" onclick="removeSession('${esc(s.id)}')">🗑</button>
-        </div>` : ''}
+      <div class="s-actions">
+        <button class="icon-btn ok${isDone ? ' is-on' : ''}" title="${isDone ? 'Mark as not done' : 'Mark complete'}" onclick="toggleDone('${esc(s.id)}')">✓</button>
+        <button class="icon-btn" title="Edit session" onclick="openModal('${esc(s.id)}')">✎</button>
+        <button class="icon-btn del" title="Delete session" onclick="removeSession('${esc(s.id)}')">🗑</button>
+      </div>
     </article>
   `;
 }
@@ -955,9 +1122,7 @@ function renderBoards() {
            <div class="empty-title">${total ? 'Nothing matches this filter' : `No ${esc(t.short)} sessions yet`}</div>
            <div class="empty-sub">${total
              ? 'Clear the search or switch back to “All”.'
-             : isAdmin
-               ? `Add the first ${esc(t.short)} session to get the track moving.`
-               : `Nothing scheduled on this track yet — check back soon.`}</div>
+             : `Nothing scheduled on this track yet.`}</div>
          </div></div>`;
 
     return `
@@ -974,10 +1139,6 @@ function renderBoards() {
         </div>
         <div class="board-body">
           ${body}
-          ${isAdmin ? `
-            <button class="add-inline" onclick="openModal('${id}')">
-              <span class="btn-plus">+</span> Add session to ${esc(t.short)}
-            </button>` : ''}
         </div>
       </section>
     `;
@@ -991,7 +1152,6 @@ window.toggleExpand = function(id) {
 };
 
 window.toggleDone = function(id) {
-  if (!requireAdmin()) return;
   const s = sessions.find(x => x.id === id);
   if (!s) return;
   s.status = s.status === 'done' ? 'planned' : 'done';
@@ -1001,7 +1161,6 @@ window.toggleDone = function(id) {
 };
 
 window.removeSession = function(id) {
-  if (!requireAdmin()) return;
   const idx = sessions.findIndex(s => s.id === id);
   if (idx === -1) return;
   lastDeleted = { session: sessions[idx], index: idx };
@@ -1054,20 +1213,17 @@ function renderTrackPick() {
 }
 window.setFormTrack = function(id) { formTrack = id; renderTrackPick(); };
 
-window.openModal = function(track, editId) {
-  if (!isAdmin) { Auth.goToLogin('sessions.html'); return; }
-  editingId = editId || null;
-  const editing = editingId ? sessions.find(s => s.id === editingId) : null;
+window.openModal = function(editId) {
+  // Edit only — sessions are created in the Google Sheet, not here
+  const editing = sessions.find(s => s.id === editId);
+  if (!editing) return;
+  editingId = editId;
 
-  formTrack = editing ? editing.track : (track || 'infra');
+  formTrack = editing.track;
   renderTrackPick();
 
-  document.getElementById('modal-title').textContent = editing ? 'Edit session' : 'New session';
-  document.getElementById('modal-sub').textContent = editing
-    ? 'Update the details of this session'
-    : `Add a session to the ${TRACKS[formTrack].short} track`;
-  document.getElementById('delete-btn').style.display = editing ? 'inline-flex' : 'none';
-  document.getElementById('save-btn').textContent = editing ? 'Save changes' : 'Add session';
+  document.getElementById('modal-title').textContent = 'Edit session';
+  document.getElementById('modal-sub').textContent = 'Update the details of this session';
 
   F.title.value    = editing ? editing.title : '';
   F.date.value     = editing ? editing.date : todayISO();
@@ -1102,7 +1258,6 @@ window.deleteCurrent = function() {
 
 form.addEventListener('submit', e => {
   e.preventDefault();
-  if (!requireAdmin()) { closeModal(); return; }
   const title = F.title.value.trim();
   if (!title) {
     F.title.classList.add('invalid');
@@ -1124,14 +1279,10 @@ form.addEventListener('submit', e => {
     tags: F.tags.value.split(',').map(x => x.trim()).filter(Boolean),
   };
 
-  if (editingId) {
-    const s = sessions.find(x => x.id === editingId);
-    Object.assign(s, data);
-    toast('Session updated');
-  } else {
-    sessions.push({ id: uid(), status: 'planned', ...data });
-    toast(`Added to ${TRACKS[data.track].short}`);
-  }
+  const target = sessions.find(x => x.id === editingId);
+  if (!target) { closeModal(); return; }
+  Object.assign(target, data);
+  toast('Session updated');
 
   save();
   closeModal();
@@ -1176,7 +1327,6 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (typing) return;
-  if ((e.key === 'n' || e.key === 'N') && isAdmin) { e.preventDefault(); openModal(); }
   if (e.key === '/') { e.preventDefault(); document.getElementById('search').focus(); }
 });
 
@@ -1186,21 +1336,17 @@ function render() {
   renderStats();
   renderUpNext();
   renderBoards();
-  Auth.renderFooter(document.getElementById('auth-slot'), {
-    onChange: () => { isAdmin = Auth.isAdmin(); document.body.classList.toggle('is-guest', !isAdmin); render(); }
-  });
+  renderSync();
 }
 
 (function initSub() {
   const el = document.getElementById('sidebar-sub');
   const d = new Date();
   el.textContent = `Session planner · ${d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}`;
-  document.querySelector('.page-sub').textContent = isAdmin
-    ? 'Two parallel tracks — infrastructure work and AI/model work. Schedule a session in either track, mark it done when the room clears.'
-    : 'Two parallel tracks — infrastructure work and AI/model work. This is the shared read-only view; an admin keeps the schedule up to date.';
 })();
 
 render();
+pullFromSheet();
 </script>
 </body>
 </html>

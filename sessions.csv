@@ -1,0 +1,66 @@
+id,track,title,date,start,duration,host,mode,location,status,tags,agenda
+disc-d05,infra,Open Discussion — Review: Day 1-4,2026-08-14,15:00,90,Team,onsite,,planned,"open-discussion, day-1-4","Revisit: Linux Server Setup & Hardening
+Revisit: Docker & Containerization
+Revisit: GPU Drivers, CUDA & NVIDIA Container Toolkit
+Revisit: Networking, VPN & Security Basics
+Revisit: Kubernetes Basics with k3s
+Revisit: Ollama — Your First Local LLM
+Revisit: Embedding Models — Choosing & Benchmarking
+Revisit: vLLM — Production Inference Server
+Revisit: Quantization — Fitting Big Models on Your GPU"
+disc-d10,infra,Open Discussion — Review: Day 5-9,2026-08-21,15:00,90,Team,onsite,,planned,"open-discussion, day-5-9","Revisit: AI Gateway with LiteLLM
+Revisit: Inference Stack Integration Day
+Revisit: High Availability & Failover for Inference
+Revisit: Docker Registry, Image Distribution & Air-Gapped Deployment
+Revisit: PDF Parsing & Document Ingestion
+Revisit: Qdrant Vector Database
+Revisit: RAG Pipeline — Core Implementation
+Revisit: Re-ranking & Retrieval Quality
+Revisit: FastAPI Service — Document Analyzer API
+Revisit: Multi-document & Multi-tenant Support
+Revisit: Conversational Memory & Multi-turn Q&A"
+disc-d15,infra,Open Discussion — Review: Day 10-14,2026-08-31,15:00,90,Team,onsite,,planned,"open-discussion, day-10-14","Revisit: LangGraph Agentic Flows
+Revisit: CrewAI — Multi-Agent Alternative Framework
+Revisit: MCP — Model Context Protocol
+Revisit: Frontend — Web UI for Document Analyzer
+Revisit: Langfuse — LLM Observability
+Revisit: Prometheus + Grafana Monitoring
+Revisit: RAGAS — Evaluation Pipeline
+Revisit: OWASP LLM Security — Prompt Injection & PII
+Revisit: JWT Auth, RBAC & Audit Logs
+Revisit: Secrets Management with Vault
+Revisit: Backup & Disaster Recovery for AI Infrastructure"
+disc-d17,infra,Open Discussion — Overall AI Infra Plan,2026-09-02,10:00,180,Team,onsite,,planned,"open-discussion, wrap-up, architecture","Walk the full architecture end to end
+Stage 1 — Infrastructure Foundation
+Stage 2 — Model Serving & Inference
+Stage 3 — RAG Pipeline
+Stage 4 — Security & LLMOps
+Stage 5 — Production & PoC Delivery
+What breaks first under real client load?"
+ai-stage2,ai,Model Serving & Inference — stage review,2026-08-17,11:00,120,Team,onsite,,planned,"stage-2, inference, models","Ollama — Your First Local LLM
+Embedding Models — Choosing & Benchmarking
+vLLM — Production Inference Server
+Quantization — Fitting Big Models on Your GPU
+AI Gateway with LiteLLM
+Inference Stack Integration Day
+High Availability & Failover for Inference
+Docker Registry, Image Distribution & Air-Gapped Deployment"
+ai-stage3,ai,RAG Pipeline — stage review,2026-08-24,11:00,180,Team,onsite,,planned,"stage-3, rag, agents","PDF Parsing & Document Ingestion
+Qdrant Vector Database
+RAG Pipeline — Core Implementation
+Re-ranking & Retrieval Quality
+FastAPI Service — Document Analyzer API
+Multi-document & Multi-tenant Support
+Conversational Memory & Multi-turn Q&A
+LangGraph Agentic Flows
+CrewAI — Multi-Agent Alternative Framework
+MCP — Model Context Protocol
+Frontend — Web UI for Document Analyzer"
+ai-stage4,ai,Security & LLMOps — stage review,2026-08-31,11:00,120,Team,onsite,,planned,"stage-4, security, llmops","Langfuse — LLM Observability
+Prometheus + Grafana Monitoring
+RAGAS — Evaluation Pipeline
+OWASP LLM Security — Prompt Injection & PII
+JWT Auth, RBAC & Audit Logs
+Secrets Management with Vault
+Backup & Disaster Recovery for AI Infrastructure
+Data Governance & Compliance Basics"
