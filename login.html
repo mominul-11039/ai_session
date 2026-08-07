@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin login — AI Infra Engineer Program</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:        #F5F6F3;
+    --bg2:       #FFFFFF;
+    --bg3:       #F1F2EF;
+    --border:    #E3E5E0;
+    --border2:   #CDD0C9;
+    --text:      #14161A;
+    --muted:     #5C6270;
+    --dim:       #949AA3;
+
+    --blue:      #2B59C3;
+    --blue-bg:   #DCE4F7;
+    --blue-dim:  #EDF1FB;
+    --green:     #1B7A4B;
+    --green-dim: #EAF7F0;
+    --amber:     #96600F;
+    --amber-bg:  #F7E7C6;
+    --amber-dim: #FBF3E2;
+    --red:       #B03A3A;
+    --red-bg:    #F7DCDC;
+    --red-dim:   #FBEDED;
+    --purple:    #5B3FBF;
+    --purple-dim:#F1EDFB;
+
+    --radius-sm: 6px;
+    --radius:    10px;
+    --radius-lg: 14px;
+
+    --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+    --display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    --shadow-sm: 0 1px 2px rgba(20,22,26,.05);
+    --shadow-lg: 0 14px 40px -10px rgba(20,22,26,.20), 0 2px 6px rgba(20,22,26,.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--body); font-size: 14px; line-height: 1.6;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 20px;
+    -webkit-font-smoothing: antialiased;
+    /* faint grid — the "infrastructure" texture, kept almost invisible */
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 46px 46px;
+    background-position: -1px -1px;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 40%, transparent 0%, var(--bg) 72%);
+  }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 3px; }
+
+  .wrap { position: relative; width: 100%; max-width: 420px; }
+
+  .brand { display: flex; align-items: center; gap: 11px; justify-content: center; margin-bottom: 22px; }
+  .logo-icon { width: 38px; height: 38px; background: var(--text); color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .brand-title { font-family: var(--display); font-size: 15px; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; }
+  .brand-sub { font-family: var(--mono); font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); overflow: hidden; }
+  .card-head { padding: 24px 26px 20px; border-bottom: 1px solid var(--border); }
+  .lock { width: 40px; height: 40px; border-radius: 11px; background: var(--amber-dim); border: 1px solid var(--amber-bg); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 14px; }
+  .card-title { font-family: var(--display); font-size: 20px; font-weight: 700; letter-spacing: -.025em; }
+  .card-sub { font-size: 13px; color: var(--muted); margin-top: 6px; line-height: 1.55; }
+
+  .card-body { padding: 22px 26px 6px; }
+  .field { margin-bottom: 16px; }
+  .label { display: block; font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+  .input-wrap { position: relative; display: flex; align-items: center; }
+  .input { width: 100%; font-family: var(--body); font-size: 13.5px; color: var(--text); background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 11px 12px; transition: border-color .15s, box-shadow .15s; }
+  .input::placeholder { color: var(--dim); }
+  .input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-dim); }
+  .input.pass { padding-right: 62px; font-family: var(--mono); letter-spacing: .04em; }
+  .reveal { position: absolute; right: 7px; font-family: var(--mono); font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--dim); background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; cursor: pointer; transition: all .15s; }
+  .reveal:hover { color: var(--text); border-color: var(--border2); }
+
+  .error { display: none; align-items: flex-start; gap: 9px; background: var(--red-dim); border: 1px solid var(--red-bg); color: var(--red); border-radius: var(--radius-sm); padding: 10px 13px; font-size: 12.5px; margin-bottom: 16px; line-height: 1.5; }
+  .error.show { display: flex; animation: shake .32s cubic-bezier(.36,.07,.19,.97); }
+  @keyframes shake { 10%,90%{transform:translateX(-1px)} 20%,80%{transform:translateX(2px)} 30%,50%,70%{transform:translateX(-4px)} 40%,60%{transform:translateX(4px)} }
+  .input.invalid { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim); }
+
+  .btn { width: 100%; font-family: var(--body); font-size: 13.5px; font-weight: 500; padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--text); background: var(--text); color: #fff; cursor: pointer; transition: all .16s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn:hover { background: #000; border-color: #000; }
+  .btn:active { transform: translateY(1px); }
+
+  .card-foot { padding: 16px 26px 20px; background: var(--bg3); border-top: 1px solid var(--border); margin-top: 20px; }
+  .foot-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+  .foot-row a { color: var(--text); font-weight: 500; text-decoration: none; border-bottom: 1px solid var(--border2); }
+  .foot-row a:hover { border-bottom-color: var(--text); }
+
+  .notice { margin-top: 16px; display: flex; gap: 10px; align-items: flex-start; background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--amber); border-radius: var(--radius); padding: 13px 15px; box-shadow: var(--shadow-sm); }
+  .notice-icon { font-size: 14px; line-height: 1.4; }
+  .notice-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .notice-text strong { color: var(--text); font-weight: 600; }
+
+  .hint-chip { font-family: var(--mono); font-size: 10.5px; background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  @media (max-width: 480px) {
+    .card-head, .card-body, .card-foot { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo-icon">🧠</div>
+      <div>
+        <div class="brand-title">AI Infra Engineer</div>
+        <div class="brand-sub">Program admin access</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="lock">🔐</div>
+        <h1 class="card-title">Admin login</h1>
+        <p class="card-sub">Everyone can read the roadmap and the session calendar. Sign in to add, edit or complete sessions.</p>
+      </div>
+
+      <form id="login-form" novalidate>
+        <div class="card-body">
+          <div class="error" id="error">
+            <span>⚠️</span>
+            <span id="error-text">That admin ID and passcode do not match.</span>
+          </div>
+
+          <div class="field">
+            <label class="label" for="admin-id">Admin ID</label>
+            <input class="input" id="admin-id" type="text" placeholder="admin" autocomplete="username" autocapitalize="off" spellcheck="false"/>
+          </div>
+
+          <div class="field">
+            <label class="label" for="passcode">Passcode</label>
+            <div class="input-wrap">
+              <input class="input pass" id="passcode" type="password" placeholder="••••••••••••" autocomplete="current-password"/>
+              <button type="button" class="reveal" id="reveal">Show</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn">🔓 Sign in as admin</button>
+        </div>
+
+        <div class="card-foot">
+          <div class="foot-row">
+            <span>Just here to read?</span>
+            <a href="index.html" id="continue-link">Continue as guest →</a>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="notice">
+      <span class="notice-icon">ℹ️</span>
+      <span class="notice-text">
+        <strong>This is a front-end gate.</strong> It controls what the interface offers, not what a visitor can technically reach — the schedule lives in each browser's local storage. Move the data behind a server if you need enforced access control.
+        Default: <span class="hint-chip">admin</span> / <span class="hint-chip">ai-infra-2026</span> — change it in <span class="hint-chip">auth.js</span>.
+      </span>
+    </div>
+  </div>
+
+<script src="auth.js"></script>
+<script>
+  // Where to land after a successful sign-in
+  const params = new URLSearchParams(location.search);
+  const rawNext = params.get('next') || 'sessions.html';
+  // Only allow returning to a local page — never an absolute URL from the query string
+  const next = /^[a-zA-Z0-9._-]+\.html$/.test(rawNext) ? rawNext : 'sessions.html';
+  document.getElementById('continue-link').href = next;
+
+  // Already signed in? Go straight through.
+  if (Auth.isAdmin()) location.replace(next);
+
+  const form = document.getElementById('login-form');
+  const idEl = document.getElementById('admin-id');
+  const passEl = document.getElementById('passcode');
+  const errEl = document.getElementById('error');
+  const errText = document.getElementById('error-text');
+
+  document.getElementById('reveal').addEventListener('click', () => {
+    const showing = passEl.type === 'text';
+    passEl.type = showing ? 'password' : 'text';
+    document.getElementById('reveal').textContent = showing ? 'Show' : 'Hide';
+    passEl.focus();
+  });
+
+  function clearError() {
+    errEl.classList.remove('show');
+    idEl.classList.remove('invalid');
+    passEl.classList.remove('invalid');
+  }
+  idEl.addEventListener('input', clearError);
+  passEl.addEventListener('input', clearError);
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const id = idEl.value.trim();
+    const pass = passEl.value;
+
+    if (!id || !pass) {
+      errText.textContent = 'Enter both your admin ID and passcode.';
+      errEl.classList.add('show');
+      (!id ? idEl : passEl).focus();
+      return;
+    }
+
+    const result = Auth.login(id, pass);
+    if (!result.ok) {
+      errText.textContent = result.error;
+      errEl.classList.add('show');
+      idEl.classList.add('invalid');
+      passEl.classList.add('invalid');
+      passEl.select();
+      return;
+    }
+    location.replace(next);
+  });
+
+  idEl.focus();
+</script>
+</body>
+</html>

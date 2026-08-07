@@ -71,7 +71,13 @@
 
   /* ── Sidebar header ─────────────────────────────────── */
   .sidebar-header { padding: 22px 18px 16px; border-bottom: 1px solid var(--border); }
-  .sidebar-logo { display: flex; align-items: center; gap: 11px; margin-bottom: 18px; }
+  .sidebar-logo { display: flex; align-items: center; gap: 11px; margin-bottom: 16px; }
+
+  /* Page switch — roadmap ⇄ sessions */
+  .page-switch { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg3); padding: 3px; margin-bottom: 16px; }
+  .ps-link { flex: 1; text-align: center; text-decoration: none; font-size: 12px; font-weight: 500; color: var(--muted); padding: 6px 8px; border-radius: 4px; transition: background .15s, color .15s, box-shadow .15s; }
+  .ps-link:hover { color: var(--text); }
+  .ps-link.active { background: var(--bg2); color: var(--text); box-shadow: var(--shadow-sm); }
   .logo-icon { width: 36px; height: 36px; background: var(--text); color: #fff; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
   .sidebar-title { font-family: var(--display); font-size: 14px; font-weight: 700; letter-spacing: -.01em; color: var(--text); line-height: 1.25; }
   .sidebar-sub { font-family: var(--mono); font-size: 10.5px; color: var(--muted); letter-spacing: -.01em; margin-top: 2px; }
@@ -87,6 +93,18 @@
   .sp-stat:last-child { border-right: 0; }
   .sp-stat-num { font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.2; }
   .sp-stat-lbl { font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: .07em; text-transform: uppercase; margin-top: 2px; }
+
+  /* ── Auth state ──────────────────────────────────────── */
+  .sidebar-foot { padding: 13px 14px 16px; border-top: 1px solid var(--border); }
+  .auth-box { display: flex; align-items: center; gap: 9px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; }
+  .auth-box.is-admin { background: var(--green-dim); border-color: var(--green-bg); }
+  .auth-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); flex-shrink: 0; }
+  .auth-box.is-admin .auth-dot { background: var(--green); box-shadow: 0 0 0 3px rgba(27,122,75,.15); }
+  .auth-text { flex: 1; min-width: 0; }
+  .auth-role { font-size: 11.5px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .auth-note { font-family: var(--mono); font-size: 9.5px; color: var(--muted); }
+  .auth-btn { font-family: var(--body); font-size: 11px; font-weight: 500; color: var(--muted); background: var(--bg2); border: 1px solid var(--border2); border-radius: 5px; padding: 5px 9px; cursor: pointer; white-space: nowrap; transition: all .15s; }
+  .auth-btn:hover { color: var(--text); border-color: var(--dim); }
 
   /* ── Sidebar: the pipeline rail ──────────────────────── */
   .sidebar-nav { flex: 1; padding: 14px 12px 24px; overflow-y: auto; }
@@ -248,6 +266,10 @@
           <div class="sidebar-sub" id="sidebar-sub">17-Day Intensive Plan</div>
         </div>
       </div>
+      <div class="page-switch">
+        <a class="ps-link" href="sessions.html">Sessions</a>
+        <a class="ps-link active" href="index.html" aria-current="page">AI-Infra Roadmap</a>
+      </div>
       <div class="sidebar-progress">
         <div class="sp-label"><span>Overall progress</span><span id="sp-pct">0%</span></div>
         <div class="sp-bar-wrap"><div class="sp-bar" id="sp-bar" style="width:0%"></div></div>
@@ -258,6 +280,7 @@
       </div>
     </div>
     <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-foot"><div id="auth-slot"></div></div>
   </aside>
 
   <!-- MAIN -->
@@ -267,6 +290,7 @@
   </main>
 </div>
 
+<script src="auth.js"></script>
 <script>
 // ─── DATA ──────────────────────────────────────────────────────────────────
 const stages = [
@@ -1256,63 +1280,42 @@ const days = [
   },
   // ── WEEK 17 ──────────────────────────────────────────
   {
-    id:"d39", week:17, stage:5, day:36, discussionIndex:null,
-    title:"Documentation & Runbooks",
-    goal:"A junior BJIT engineer can deploy, operate, and debug the system using only your documentation",
-    output:"Architecture doc, deployment guide, ops runbook, API reference — all in a MkDocs site served at /docs.",
-    docLink:"Documentation is your handoff artifact. Without it, you're the single point of failure forever.",
+    id:"d39", week:17, stage:6, day:null, discussionIndex:4,
+    title:"Open Discussion — Overall AI Infra Plan",
+    goal:"Step back from the day-to-day and review the whole AI infrastructure plan end to end — what got built, what holds up under scrutiny, and what still needs work",
+    output:"A shared understanding of the complete system, plus a written list of the gaps that must close before this goes in front of a client.",
+    docLink:"The final checkpoint. Seventeen days of individual pieces only matter if the whole thing hangs together — this session is where that gets tested.",
     learn:[
-      { title:"MkDocs + Material theme", desc:"Markdown-based docs site. Auto-deploys from repo. Material theme gives you search, tabs, admonitions — professional docs in hours.", code:"pip install mkdocs-material\nmkdocs new .\nmkdocs serve  # preview at localhost:8000\nmkdocs build  # static site in site/" },
-      { title:"Architecture diagram as code", desc:"Mermaid.js for diagrams in Markdown. Your architecture diagram lives in your repo, version-controlled alongside the code.", code:"```mermaid\ngraph TB\n  Client --> nginx\n  nginx --> FastAPI\n  FastAPI --> LiteLLM\n  FastAPI --> Qdrant\n  LiteLLM --> vLLM\n```" },
-      { title:"Runbook structure", desc:"Each runbook: trigger (what happened), symptoms, diagnosis steps, resolution steps, prevention. Written for someone at 2am who's never seen this before.", code:null },
-      { title:"OpenAPI auto-docs", desc:"FastAPI generates /docs (Swagger UI) and /redoc automatically. Add descriptions to every route, model, and field.", code:null },
+      { title:"Walk the full architecture end to end", desc:"Trace one document from upload through chunking, embedding, storage, retrieval, reranking and answer — naming every component it passes through and why that component is there.", code:null },
+      { title:"Stage 1 — Infrastructure Foundation", desc:"Linux hardening, Docker, GPU/CUDA, networking and k3s. Does the base layer still hold up now that everything else runs on top of it?", code:null },
+      { title:"Stage 2 — Model Serving & Inference", desc:"Ollama, embedding model choice, vLLM, quantization, LiteLLM and failover. Revisit the throughput and reliability decisions with the numbers you actually measured.", code:null },
+      { title:"Stage 3 — RAG Pipeline", desc:"Qdrant, chunking strategy, hybrid search, reranking, agentic flows and MCP. The layer most likely to need retuning once real client documents arrive.", code:null },
+      { title:"Stage 4 — Security & LLMOps", desc:"Observability, monitoring, evaluation, OWASP LLM risks, auth and RBAC, secrets, backups and data governance. What would fail an audit today?", code:null },
+      { title:"Stage 5 — Production & PoC Delivery", desc:"CI/CD with an eval gate, model versioning, zero-downtime updates and Kubernetes hardening. Is the deployment story genuinely repeatable by someone else?", code:null },
+      { title:"What breaks first under real client load?", desc:"Honest weak-point discussion: single points of failure, assumptions nobody measured, and the parts that have never been tested outside a demo.", code:null },
     ],
     implement:[
-      { title:"Set up MkDocs with Material theme", desc:"Install, configure mkdocs.yml, deploy to /docs path on your server via nginx.", code:"pip install mkdocs-material mkdocs-mermaid2-plugin\n# mkdocs.yml:\n# theme:\n#   name: material\n# plugins:\n#   - search\n#   - mermaid2" },
-      { title:"Write architecture document", desc:"System overview, component diagram (Mermaid), data flow, design decisions and why.", code:null },
-      { title:"Write deployment guide", desc:"Step-by-step: prerequisities, clone repo, configure .env, docker compose up, verify each service.", code:null },
-      { title:"Write 5 ops runbooks", desc:"1) Service is down. 2) GPU out of memory. 3) Qdrant disk full. 4) Model giving bad answers. 5) Adding a new user.", code:null },
-      { title:"Finalize OpenAPI docs", desc:"Every endpoint: description, request/response examples, error codes. The /docs page should need no explanation.", code:null },
+      { title:"Each person walks one stage end to end", desc:"10 minutes each: what that stage does, how it connects to the stages either side of it, and where it is weakest. Presenting it out loud exposes the gaps fast.", code:null },
+      { title:"Draw the final architecture together", desc:"One diagram on the board covering every service, port, data store and network boundary. Anything nobody can explain is a gap.", code:null },
+      { title:"Write the open-gaps list", desc:"Everything still missing, untested or hand-waved — ranked by what would hurt most in front of a client.", code:null },
+      { title:"Agree what production-readiness still requires", desc:"Turn the gaps list into concrete next steps with owners. This is the handoff from learning plan to real work.", code:null },
     ],
     resources:[
-      { name:"MkDocs Material documentation", desc:"The most comprehensive docs theme for MkDocs", type:"📚", tag:"Docs", tagColor:"var(--blue)", url:"https://squidfunk.github.io/mkdocs-material/" },
-      { name:"Mermaid.js diagram types", desc:"All diagram types with live editor", type:"🧜", tag:"Reference", tagColor:"var(--green)", url:"https://mermaid.js.org/intro/" },
-      { name:"Runbook template", desc:"Google SRE runbook format — battle tested", type:"📋", tag:"Template", tagColor:"var(--amber)", url:"https://sre.google/sre-book/on-call/" },
-      { name:"FastAPI advanced docs", desc:"Customizing and extending auto-generated API docs", type:"⚡", tag:"Docs", tagColor:"var(--purple)", url:"https://fastapi.tiangolo.com/advanced/extending-openapi/" }
-    ]
-  },
-  {
-    id:"d40", week:17, stage:5, day:37, discussionIndex:null,
-    title:"Demo, Cost Analysis & BJIT Service Pitch",
-    goal:"Deliver the PoC — live demo, ROI numbers, client proposal — and position BJIT as an on-premise AI vendor",
-    output:"5-min demo video, cost/ROI slide deck, BJIT On-Premise AI service proposal ready to send to prospects.",
-    docLink:"Everything builds to this day. This is what gets BJIT a new service line.",
-    learn:[
-      { title:"Cost modeling: self-hosted vs API", desc:"OpenAI API: input $0.0015/1K tokens, output $0.006/1K. A document-heavy client (10M tokens/month) = $7,500+/month. Self-hosted GPU: $0.60/hr × 24 × 30 = $432/month amortized.", code:"# Cost comparison (10M tokens/month example)\n# OpenAI GPT-4o: ~$15,000/month\n# OpenAI GPT-3.5: ~$1,500/month\n# Self-hosted (cloud GPU): ~$450/month\n# Self-hosted (owned hardware): ~$100/month\n# → On-prem payback period: 3-6 months" },
-      { title:"PoC-to-production narrative", desc:"PoC proves: it works, it's secure, it's measurable. Production proposal: same stack, production SLAs, BJIT manages it. Monthly retainer vs one-time.", code:null },
-      { title:"Demo scripting", desc:"5 min structure: Problem (30s) → Architecture (60s) → Live demo (150s) → Cost & ROI (30s) → What's next (30s). Practice 3 times before recording.", code:null },
-    ],
-    implement:[
-      { title:"Build cost/ROI calculator spreadsheet", desc:"Inputs: monthly tokens, current API cost. Outputs: self-hosted cost, savings, payback period. Client fills in their numbers.", code:null },
-      { title:"Record 5-minute demo video", desc:"OBS Studio screen capture. Show: PDF upload → indexing → asking 5 real questions → Grafana dashboard → Langfuse traces.", code:null },
-      { title:"Write BJIT On-Premise AI service proposal", desc:"4 pages: Problem, Solution (with your stack), Pricing (setup fee + monthly retainer), References/PoC evidence.", code:null },
-      { title:"Identify 3 BJIT client prospects for this service", desc:"Which existing BJIT clients handle sensitive documents? Banks, healthcare, government — start there.", code:null },
-      { title:"Tag your GitHub repo and document the final state", desc:"v1.0.0 release. All services healthy. RAGAS scores above baseline. CI green. Ready to demo.", code:"git tag -a v1.0.0 -m 'PoC complete — Document Analyzer production-grade'\ngit push origin v1.0.0" },
-    ],
-    resources:[
-      { name:"OBS Studio", desc:"Free screen recording and streaming software", type:"🎥", tag:"Tool", tagColor:"var(--blue)", url:"https://obsproject.com" },
-      { name:"LLM pricing comparison", desc:"Up-to-date API pricing for all major providers", type:"💰", tag:"Reference", tagColor:"var(--green)", url:"https://artificialanalysis.ai/models" },
-      { name:"AI proposal template", desc:"Consulting proposal structure for AI projects", type:"📄", tag:"Template", tagColor:"var(--amber)", url:"https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai" },
-      { name:"BJIT client vertical research", desc:"Bangladesh banking & healthcare IT spending reports", type:"📊", tag:"Research", tagColor:"var(--purple)", url:"https://www.bjitgroup.com" }
+
     ]
   }
 ];
+
 
 // ─── SCHEDULE DATES ───────────────────────────────────────────────────────────
 // Plan starts Monday, Aug 10 2026. Weekends (Sat/Sun) and Aug 26 2026 (holiday) are skipped.
 const PLAN_START = new Date(2026, 7, 10); // month is 0-indexed: 7 = August
 const HOLIDAYS = ['2026-08-26'];
-function toISO(d) { return d.toISOString().slice(0, 10); }
+// Local date parts — toISOString() converts to UTC first, which shifts the
+// date backwards on UTC+ machines and skips the wrong day as a holiday.
+function toISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 function isWeekend(d) { const day = d.getDay(); return day === 0 || day === 6; }
 
 function buildPlanDates(numDays) {
@@ -1376,8 +1379,10 @@ function buildSidebar() {
       const item = document.createElement('div');
       item.className = `nav-item stage-${d.stage}${isActive ? ' active' : ''}${isDone ? ' done-nav' : ''}${isDiscussion ? ' nav-item-discussion' : ''}`;
       item.id = 'nav-' + d.id;
+      // Titles already carry the "Open Discussion — " prefix; strip it so the
+      // rail label doesn't repeat it, whatever the session is called.
       const label = isDiscussion
-        ? `🗣️ Open Discussion — ${d.title.replace('Open Discussion — Review: ', 'Review ')}`
+        ? `🗣️ Open Discussion — ${d.title.replace(/^Open Discussion — /, '').replace(/^Review: /, 'Review ')}`
         : `Topic ${d.day}: ${d.title}`;
       item.innerHTML = `<span class="nav-dot"></span><span class="nav-label${isDiscussion ? ' nav-label-discussion' : ''}">${label}</span>`;
       item.onclick = () => { currentDayId = d.id; render(); };
@@ -1616,6 +1621,9 @@ function render() {
   buildSidebar();
   renderMain();
   updateStats();
+  // Progress ticks here are per-browser, so they stay open to everyone —
+  // this only surfaces who you are and links to the admin login.
+  Auth.renderFooter(document.getElementById('auth-slot'), { guestNote: 'Progress saves in this browser' });
 }
 
 render();

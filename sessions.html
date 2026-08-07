@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sessions — AI Infra Engineer Program</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    /* Paper & ink — shared with the roadmap page */
+    --bg:        #F5F6F3;
+    --bg2:       #FFFFFF;
+    --bg3:       #F1F2EF;
+    --border:    #E3E5E0;
+    --border2:   #CDD0C9;
+    --text:      #14161A;
+    --muted:     #5C6270;
+    --dim:       #949AA3;
+
+    --blue:      #2B59C3;
+    --blue-bg:   #DCE4F7;
+    --blue-dim:  #EDF1FB;
+
+    --green:     #1B7A4B;
+    --green-bg:  #D6EFE0;
+    --green-dim: #EAF7F0;
+
+    --amber:     #96600F;
+    --amber-bg:  #F7E7C6;
+    --amber-dim: #FBF3E2;
+
+    --red:       #B03A3A;
+    --red-bg:    #F7DCDC;
+    --red-dim:   #FBEDED;
+
+    --purple:    #5B3FBF;
+    --purple-bg: #E4DDF8;
+    --purple-dim:#F1EDFB;
+
+    --teal:      #0E7C74;
+    --teal-bg:   #D0EFEC;
+    --teal-dim:  #E7F7F5;
+
+    --radius-sm: 6px;
+    --radius:    10px;
+    --radius-lg: 14px;
+
+    --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+    --display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    --shadow-sm: 0 1px 2px rgba(20,22,26,.05);
+    --shadow:    0 1px 3px rgba(20,22,26,.06), 0 6px 16px -6px rgba(20,22,26,.08);
+    --shadow-lg: 0 12px 32px -8px rgba(20,22,26,.18), 0 2px 6px rgba(20,22,26,.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--body); font-size: 14px; line-height: 1.6; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 3px; }
+
+  /* Guests read; admins edit. `is-guest` is set on <body> before first paint. */
+  body.is-guest .admin-only { display: none !important; }
+  body:not(.is-guest) .guest-only { display: none !important; }
+
+  /* ── Layout ──────────────────────────────────────────── */
+  .app { display: grid; grid-template-columns: 288px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--bg2); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+  .main { overflow-y: auto; }
+
+  /* ── Sidebar ─────────────────────────────────────────── */
+  .sidebar-header { padding: 22px 18px 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo { display: flex; align-items: center; gap: 11px; margin-bottom: 16px; }
+  .logo-icon { width: 36px; height: 36px; background: var(--text); color: #fff; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .sidebar-title { font-family: var(--display); font-size: 14px; font-weight: 700; letter-spacing: -.01em; color: var(--text); line-height: 1.25; }
+  .sidebar-sub { font-family: var(--mono); font-size: 10.5px; color: var(--muted); letter-spacing: -.01em; margin-top: 2px; }
+
+  /* Page switch — roadmap ⇄ sessions */
+  .page-switch { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg3); padding: 3px; }
+  .ps-link { flex: 1; text-align: center; text-decoration: none; font-size: 12px; font-weight: 500; color: var(--muted); padding: 6px 8px; border-radius: 4px; transition: background .15s, color .15s, box-shadow .15s; }
+  .ps-link:hover { color: var(--text); }
+  .ps-link.active { background: var(--bg2); color: var(--text); box-shadow: var(--shadow-sm); }
+
+  .sidebar-nav { flex: 1; padding: 16px 12px 20px; overflow-y: auto; }
+  .nav-section-label { font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .11em; text-transform: uppercase; color: var(--dim); padding: 0 8px; margin-bottom: 8px; }
+  .nav-section-label + .nav-section-label { margin-top: 0; }
+  .nav-group { margin-bottom: 20px; }
+
+  .filter-item { width: 100%; display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; color: var(--muted); font-family: var(--body); font-size: 12.5px; background: transparent; border: 1px solid transparent; text-align: left; transition: background .15s, color .15s, border-color .15s; }
+  .filter-item:hover { background: var(--bg3); color: var(--text); }
+  .filter-item.active { background: var(--bg3); color: var(--text); font-weight: 500; border-color: var(--border); }
+  .fi-swatch { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; border: 1.5px solid var(--dim); background: transparent; }
+  .filter-item[data-track="infra"] .fi-swatch { border-color: var(--blue); background: var(--blue-bg); }
+  .filter-item[data-track="ai"] .fi-swatch { border-color: var(--purple); background: var(--purple-bg); }
+  .filter-item[data-track="all"] .fi-swatch { border-color: var(--border2); background: var(--bg3); }
+  .fi-label { flex: 1; min-width: 0; }
+  .fi-count { font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
+  .filter-item.active .fi-count { color: var(--muted); }
+
+  .side-stats { border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; margin: 0 2px; }
+  .ss-row { display: flex; align-items: baseline; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .ss-row:last-child { border-bottom: 0; }
+  .ss-lbl { font-family: var(--mono); font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); }
+  .ss-val { font-family: var(--display); font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+
+  .sidebar-foot { padding: 14px 14px 18px; border-top: 1px solid var(--border); }
+  .sidebar-foot .btn { margin-bottom: 10px; }
+
+  /* ── Auth state ──────────────────────────────────────── */
+  .auth-box { display: flex; align-items: center; gap: 9px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; }
+  .auth-box.is-admin { background: var(--green-dim); border-color: var(--green-bg); }
+  .auth-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); flex-shrink: 0; }
+  .auth-box.is-admin .auth-dot { background: var(--green); box-shadow: 0 0 0 3px rgba(27,122,75,.15); }
+  .auth-text { flex: 1; min-width: 0; }
+  .auth-role { font-size: 11.5px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .auth-note { font-family: var(--mono); font-size: 9.5px; color: var(--muted); }
+  .auth-btn { font-family: var(--body); font-size: 11px; font-weight: 500; color: var(--muted); background: var(--bg2); border: 1px solid var(--border2); border-radius: 5px; padding: 5px 9px; cursor: pointer; white-space: nowrap; transition: all .15s; }
+  .auth-btn:hover { color: var(--text); border-color: var(--dim); }
+
+  .readonly-chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10.5px; color: var(--muted); background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px; cursor: pointer; transition: all .15s; }
+  .readonly-chip:hover { border-color: var(--border2); color: var(--text); }
+  .readonly-chip b { font-weight: 600; color: var(--text); }
+
+  /* ── Buttons ─────────────────────────────────────────── */
+  .btn { font-family: var(--body); font-size: 12.5px; font-weight: 500; padding: 9px 15px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg2); color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; transition: all .16s; box-shadow: var(--shadow-sm); white-space: nowrap; }
+  .btn:hover { border-color: var(--dim); color: var(--text); }
+  .btn-primary { background: var(--text); border-color: var(--text); color: #fff; }
+  .btn-primary:hover { background: #000; border-color: #000; color: #fff; }
+  .btn-danger { color: var(--red); border-color: var(--red-bg); background: var(--red-dim); box-shadow: none; }
+  .btn-danger:hover { border-color: var(--red); color: var(--red); }
+  .btn-full { width: 100%; }
+  .btn-plus { font-size: 14px; line-height: 1; margin-top: -1px; }
+
+  /* ── Main header ─────────────────────────────────────── */
+  .main-header { padding: 26px 36px 18px; border-bottom: 1px solid var(--border); background: rgba(245,246,243,.86); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; }
+  .breadcrumb { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .breadcrumb span:first-child { color: var(--muted); font-weight: 600; }
+  .head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .page-title { font-family: var(--display); font-size: 27px; font-weight: 700; letter-spacing: -.025em; line-height: 1.15; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-top: 6px; max-width: 56ch; }
+  .head-actions { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+
+  .search-wrap { position: relative; display: flex; align-items: center; }
+  .search-wrap span { position: absolute; left: 10px; font-size: 12px; color: var(--dim); pointer-events: none; }
+  .search-input { font-family: var(--body); font-size: 12.5px; color: var(--text); background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px 9px 30px; width: 210px; box-shadow: var(--shadow-sm); transition: border-color .15s, width .2s; }
+  .search-input::placeholder { color: var(--dim); }
+  .search-input:focus { outline: none; border-color: var(--border2); width: 240px; }
+
+  .segmented { display: flex; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; gap: 2px; }
+  .seg-btn { font-family: var(--body); font-size: 12px; font-weight: 500; color: var(--muted); background: transparent; border: 0; border-radius: 4px; padding: 6px 11px; cursor: pointer; transition: background .15s, color .15s, box-shadow .15s; white-space: nowrap; }
+  .seg-btn:hover { color: var(--text); }
+  .seg-btn.active { background: var(--bg2); color: var(--text); box-shadow: var(--shadow-sm); }
+
+  .main-body { padding: 26px 36px 70px; max-width: 1240px; }
+
+  /* ── Up-next banner ──────────────────────────────────── */
+  .upnext { background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--text); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px; display: flex; gap: 16px; align-items: center; box-shadow: var(--shadow-sm); flex-wrap: wrap; }
+  .un-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .un-body { flex: 1; min-width: 220px; }
+  .un-label { font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .11em; text-transform: uppercase; color: var(--dim); margin-bottom: 4px; }
+  .un-title { font-family: var(--display); font-size: 15.5px; font-weight: 600; letter-spacing: -.015em; }
+  .un-meta { font-size: 12.5px; color: var(--muted); margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .un-count { font-family: var(--display); font-size: 13px; font-weight: 600; padding: 7px 13px; border-radius: 99px; white-space: nowrap; }
+
+  /* ── Stat tiles ──────────────────────────────────────── */
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
+  .stat-tile { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 15px; box-shadow: var(--shadow-sm); }
+  .st-lbl { font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+  .st-val { font-family: var(--display); font-size: 25px; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; margin-top: 5px; }
+  .st-sub { font-family: var(--mono); font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+
+  /* ── Boards ──────────────────────────────────────────── */
+  .boards { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; align-items: start; }
+  .board { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .board-head { padding: 14px 18px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+  .board-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .board-title { font-family: var(--display); font-size: 14px; font-weight: 700; letter-spacing: -.015em; }
+  .board-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; line-height: 1.45; }
+  .board-count { font-family: var(--mono); font-size: 10.5px; padding: 3px 9px; border-radius: 20px; margin-left: auto; flex-shrink: 0; align-self: flex-start; }
+  .board-body { padding: 16px 18px 18px; }
+
+  /* Timeline rail — echoes the roadmap sidebar rail */
+  .timeline { position: relative; display: flex; flex-direction: column; gap: 10px; }
+  /* rail runs through the centre of the date badges: 1px border + 12px pad + 22px half-badge */
+  .timeline::before { content: ''; position: absolute; left: 34px; top: 10px; bottom: 10px; width: 2px; background: var(--border); }
+  .timeline.empty::before { display: none; }
+
+  /* ── Session card ────────────────────────────────────── */
+  .s-card { position: relative; display: flex; gap: 13px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 13px 12px 12px; transition: border-color .15s, box-shadow .15s, transform .15s; }
+  .s-card:hover { border-color: var(--border2); box-shadow: var(--shadow); }
+  .s-card.done { background: var(--bg3); }
+  .s-card.done .s-title { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--border2); }
+  .s-card.cancelled { opacity: .62; }
+  .s-card.cancelled .s-title { text-decoration: line-through; text-decoration-color: var(--border2); }
+  .s-card.today-card { border-color: var(--amber); box-shadow: 0 0 0 3px var(--amber-dim); }
+
+  .s-date { width: 44px; flex-shrink: 0; text-align: center; border-radius: var(--radius-sm); padding: 6px 0 7px; border: 1px solid var(--border); background: var(--bg2); z-index: 1; align-self: flex-start; }
+  .s-dow { font-family: var(--mono); font-size: 8.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+  .s-day { font-family: var(--display); font-size: 18px; font-weight: 700; letter-spacing: -.03em; line-height: 1.1; }
+  .s-mon { font-family: var(--mono); font-size: 8.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+  .s-main { flex: 1; min-width: 0; }
+  .s-top { display: flex; align-items: flex-start; gap: 9px; }
+  .s-title { font-size: 13.5px; font-weight: 600; letter-spacing: -.008em; line-height: 1.4; flex: 1; min-width: 0; }
+  .s-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-top: 5px; font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+  .s-meta .sep { width: 3px; height: 3px; border-radius: 50%; background: var(--border2); flex-shrink: 0; }
+  .s-host { display: flex; align-items: center; gap: 5px; margin-top: 7px; font-size: 12px; color: var(--muted); }
+  .s-avatar { width: 19px; height: 19px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 9.5px; font-weight: 700; flex-shrink: 0; }
+  .s-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+  .s-tag { font-family: var(--mono); font-size: 9.5px; padding: 2px 7px; border-radius: 20px; background: var(--bg3); border: 1px solid var(--border); color: var(--muted); }
+
+  .status-pill { font-family: var(--mono); font-size: 9.5px; font-weight: 500; padding: 3px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; letter-spacing: .01em; }
+  .pill-upcoming  { background: var(--blue-dim);  color: var(--blue);  border: 1px solid var(--blue-bg); }
+  .pill-today     { background: var(--amber-bg);  color: var(--amber); border: 1px solid var(--amber); }
+  .pill-done      { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-bg); }
+  .pill-cancelled { background: var(--red-dim);   color: var(--red);   border: 1px solid var(--red-bg); }
+  .pill-overdue   { background: var(--bg3);       color: var(--dim);   border: 1px solid var(--border); }
+
+  .s-agenda { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 9px; display: none; }
+  .s-agenda.open { display: block; }
+  .s-agenda-lbl { font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-bottom: 5px; }
+  .s-agenda ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .s-agenda li { position: relative; padding-left: 14px; font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+  .s-agenda li::before { content: ''; position: absolute; left: 3px; top: 8px; width: 4px; height: 4px; border-radius: 50%; background: var(--border2); }
+  .s-notes { font-size: 12.5px; color: var(--muted); line-height: 1.6; margin-top: 8px; }
+  .s-link { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 11px; margin-top: 8px; text-decoration: none; color: var(--blue); word-break: break-all; }
+  .s-link:hover { text-decoration: underline; }
+
+  .s-expand { font-family: var(--mono); font-size: 10.5px; color: var(--dim); background: none; border: 0; cursor: pointer; padding: 6px 0 0; display: flex; align-items: center; gap: 5px; }
+  .s-expand:hover { color: var(--text); }
+  .s-expand .chev { transition: transform .2s; font-size: 8px; }
+  .s-expand.open .chev { transform: rotate(180deg); }
+
+  /* Always visible for admins — an edit control you have to hunt for is a
+     control people assume isn't there. Dimmed at rest, solid on hover. */
+  .s-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; opacity: .7; transition: opacity .15s; }
+  .s-card:hover .s-actions, .s-card:focus-within .s-actions { opacity: 1; }
+  .icon-btn { width: 26px; height: 26px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg2); color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all .15s; }
+  .icon-btn:hover { background: var(--bg3); border-color: var(--border); color: var(--text); }
+  .icon-btn.ok:hover { background: var(--green-dim); border-color: var(--green-bg); color: var(--green); }
+  .icon-btn.del:hover { background: var(--red-dim); border-color: var(--red-bg); color: var(--red); }
+  .icon-btn.is-on { background: var(--green-dim); border-color: var(--green-bg); color: var(--green); }
+
+  /* Add-session ghost row at the bottom of each board */
+  .add-inline { width: 100%; margin-top: 11px; font-family: var(--body); font-size: 12.5px; font-weight: 500; color: var(--muted); background: transparent; border: 1px dashed var(--border2); border-radius: var(--radius-sm); padding: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all .16s; }
+  .add-inline:hover { color: var(--text); background: var(--bg3); border-style: solid; }
+  .board-infra .add-inline:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
+  .board-ai .add-inline:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-dim); }
+
+  /* ── Empty states ────────────────────────────────────── */
+  .empty { text-align: center; padding: 26px 16px 22px; border: 1px dashed var(--border); border-radius: var(--radius-sm); background: var(--bg3); }
+  .empty-icon { font-size: 22px; opacity: .55; }
+  .empty-title { font-family: var(--display); font-size: 13px; font-weight: 600; margin-top: 8px; }
+  .empty-sub { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.55; }
+
+  /* ── Modal ───────────────────────────────────────────── */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(20,22,26,.42); backdrop-filter: blur(3px); display: none; align-items: flex-start; justify-content: center; padding: 40px 20px; z-index: 100; overflow-y: auto; }
+  .modal-backdrop.open { display: flex; animation: fade .16s ease-out; }
+  @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 100%; max-width: 580px; box-shadow: var(--shadow-lg); animation: rise .2s cubic-bezier(.4,0,.2,1); overflow: hidden; }
+  .modal-head { padding: 18px 22px 15px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 12px; }
+  .modal-title { font-family: var(--display); font-size: 16px; font-weight: 700; letter-spacing: -.02em; }
+  .modal-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .modal-close { margin-left: auto; }
+  .modal-body { padding: 18px 22px 6px; }
+  .modal-foot { padding: 15px 22px 18px; display: flex; gap: 9px; align-items: center; border-top: 1px solid var(--border); margin-top: 16px; background: var(--bg3); }
+  .modal-foot .spacer { flex: 1; }
+
+  .field { margin-bottom: 15px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field-row-3 { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; }
+  .label { display: block; font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+  .label .req { color: var(--red); }
+  .input, .select, .textarea { width: 100%; font-family: var(--body); font-size: 13px; color: var(--text); background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 9px 11px; transition: border-color .15s, box-shadow .15s; }
+  .input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-dim); }
+  .input::placeholder, .textarea::placeholder { color: var(--dim); }
+  .input.invalid { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim); }
+  .textarea { resize: vertical; min-height: 74px; line-height: 1.6; }
+  .select { appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23949AA3' stroke-width='1.6' stroke-linecap='round'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; padding-right: 30px; }
+  .hint { font-size: 11.5px; color: var(--dim); margin-top: 5px; line-height: 1.5; }
+
+  /* Track picker */
+  .track-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tp-opt { position: relative; border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 11px 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; background: var(--bg2); transition: all .15s; }
+  .tp-opt input { position: absolute; opacity: 0; pointer-events: none; }
+  .tp-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .tp-name { display: block; font-size: 12.5px; font-weight: 600; line-height: 1.3; }
+  .tp-desc { display: block; font-family: var(--mono); font-size: 9.5px; color: var(--dim); margin-top: 1px; }
+  .tp-opt:hover { border-color: var(--dim); }
+  .tp-opt.sel-infra { border-color: var(--blue); background: var(--blue-dim); box-shadow: 0 0 0 3px var(--blue-dim); }
+  .tp-opt.sel-ai { border-color: var(--purple); background: var(--purple-dim); box-shadow: 0 0 0 3px var(--purple-dim); }
+
+  /* ── Toast ───────────────────────────────────────────── */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(14px); background: var(--text); color: #fff; font-size: 12.5px; padding: 11px 18px; border-radius: 99px; box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 200; display: flex; align-items: center; gap: 9px; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast button { background: none; border: 0; color: #8FE0AC; font-family: var(--body); font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 0; }
+
+  .kbd { font-family: var(--mono); font-size: 10px; border: 1px solid var(--border2); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; color: var(--muted); background: var(--bg2); }
+
+  /* ── Scrollbar ───────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; border: 2px solid var(--bg2); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--dim); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+
+  @media (max-width: 1080px) {
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 860px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .main-header { padding: 20px 18px 16px; }
+    .main-body { padding: 20px 18px 60px; }
+    .page-title { font-size: 22px; }
+    .boards { grid-template-columns: 1fr; }
+    .search-input, .search-input:focus { width: 100%; }
+    .search-wrap { flex: 1; min-width: 170px; }
+    .head-actions { width: 100%; }
+    .field-row, .field-row-3, .track-pick { grid-template-columns: 1fr; }
+    .s-actions { opacity: 1; flex-direction: row; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon">🗓️</div>
+        <div>
+          <div class="sidebar-title">AI Infra Engineer</div>
+          <div class="sidebar-sub" id="sidebar-sub">Session planner</div>
+        </div>
+      </div>
+      <div class="page-switch">
+        <a class="ps-link active" href="sessions.html" aria-current="page">Sessions</a>
+        <a class="ps-link" href="index.html">AI-Infra Roadmap</a>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-section-label">Tracks</div>
+        <div id="track-filters"></div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-section-label">Status</div>
+        <div id="status-filters"></div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-section-label">At a glance</div>
+        <div class="side-stats">
+          <div class="ss-row"><span class="ss-lbl">Upcoming</span><span class="ss-val" id="ss-upcoming">0</span></div>
+          <div class="ss-row"><span class="ss-lbl">Completed</span><span class="ss-val" id="ss-done">0</span></div>
+          <div class="ss-row"><span class="ss-lbl">Total hours</span><span class="ss-val" id="ss-hours">0</span></div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <button class="btn btn-primary btn-full admin-only" onclick="openModal('infra')"><span class="btn-plus">+</span> New session</button>
+      <div id="auth-slot"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="main-header">
+      <div class="breadcrumb">
+        <span>Program</span><span>›</span><span>Sessions</span><span>›</span><span id="crumb-scope">All tracks</span>
+      </div>
+      <div class="head-row">
+        <div>
+          <h1 class="page-title">Sessions</h1>
+          <p class="page-sub">Two parallel tracks — infrastructure work and AI/model work. Schedule a session in either track, mark it done when the room clears.</p>
+        </div>
+        <div class="head-actions">
+          <div class="search-wrap">
+            <span>🔍</span>
+            <input class="search-input" id="search" type="search" placeholder="Search sessions…" autocomplete="off"/>
+          </div>
+          <div class="segmented" id="view-seg">
+            <button class="seg-btn active" data-status="all">All</button>
+            <button class="seg-btn" data-status="upcoming">Upcoming</button>
+            <button class="seg-btn" data-status="done">Done</button>
+          </div>
+          <button class="btn btn-primary admin-only" onclick="openModal()"><span class="btn-plus">+</span> Add session</button>
+          <button class="readonly-chip guest-only" onclick="Auth.goToLogin('sessions.html')" title="Sign in to add or edit sessions">
+            👁 <span>View only</span> · <b>Admin login</b>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-body">
+      <div id="upnext-slot"></div>
+      <div class="stat-row" id="stat-row"></div>
+      <div class="boards" id="boards"></div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modal-title">New session</div>
+        <div class="modal-sub" id="modal-sub">Add a session to the program calendar</div>
+      </div>
+      <button class="btn modal-close" onclick="closeModal()" aria-label="Close">Esc</button>
+    </div>
+
+    <form id="session-form" novalidate>
+      <div class="modal-body">
+        <div class="field">
+          <label class="label">Track</label>
+          <div class="track-pick" id="track-pick"></div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="f-title">Session title <span class="req">*</span></label>
+          <input class="input" id="f-title" name="title" type="text" placeholder="e.g. Docker &amp; Compose — live build" autocomplete="off"/>
+          <div class="hint" id="title-hint" style="display:none;color:var(--red)">A title is required.</div>
+        </div>
+
+        <div class="field field-row-3">
+          <div>
+            <label class="label" for="f-date">Date <span class="req">*</span></label>
+            <input class="input" id="f-date" name="date" type="date"/>
+          </div>
+          <div>
+            <label class="label" for="f-start">Start</label>
+            <input class="input" id="f-start" name="start" type="time" value="10:00"/>
+          </div>
+          <div>
+            <label class="label" for="f-duration">Duration</label>
+            <select class="select" id="f-duration" name="duration">
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60" selected>1 hour</option>
+              <option value="90">1h 30m</option>
+              <option value="120">2 hours</option>
+              <option value="180">3 hours</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field field-row">
+          <div>
+            <label class="label" for="f-host">Host / facilitator</label>
+            <input class="input" id="f-host" name="host" type="text" placeholder="Who runs it" autocomplete="off"/>
+          </div>
+          <div>
+            <label class="label" for="f-mode">Mode</label>
+            <select class="select" id="f-mode" name="mode">
+              <option value="onsite">Onsite</option>
+              <option value="online">Online</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="f-location">Room or meeting link</label>
+          <input class="input" id="f-location" name="location" type="text" placeholder="Meeting Room 3 — or https://meet.google.com/…" autocomplete="off"/>
+        </div>
+
+        <div class="field">
+          <label class="label" for="f-agenda">Agenda</label>
+          <textarea class="textarea" id="f-agenda" name="agenda" placeholder="One item per line&#10;Recap of last session&#10;Live demo&#10;Open Q&amp;A"></textarea>
+          <div class="hint">One line per agenda item.</div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="f-tags">Tags</label>
+          <input class="input" id="f-tags" name="tags" type="text" placeholder="docker, hands-on, week-1" autocomplete="off"/>
+          <div class="hint">Comma separated.</div>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn btn-danger" id="delete-btn" style="display:none" onclick="deleteCurrent()">Delete</button>
+        <div class="spacer"></div>
+        <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="save-btn">Save session</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="auth.js"></script>
+<script>
+// ─── ACCESS ──────────────────────────────────────────────────────────────────
+// Read-only for everyone; the admin session unlocks add / edit / delete.
+let isAdmin = Auth.isAdmin();
+document.body.classList.toggle('is-guest', !isAdmin);
+
+/** Blocks a mutation for guests and points them at the login screen. */
+function requireAdmin() {
+  if (isAdmin) return true;
+  toast('Admin access needed', 'Log in', () => Auth.goToLogin('sessions.html'));
+  return false;
+}
+
+// ─── TRACKS ──────────────────────────────────────────────────────────────────
+const TRACKS = {
+  infra: { id:'infra', name:'AI Infra Sessions', short:'AI Infra', icon:'🗣️',
+           color:'--blue', bg:'--blue-bg', dim:'--blue-dim',
+           desc:'Open discussions — the roadmap reviewed day by day' },
+  ai:    { id:'ai',    name:'AI Sessions',       short:'AI',
+           icon:'🧠', color:'--purple', bg:'--purple-bg', dim:'--purple-dim',
+           desc:'Stage reviews — models, RAG, evaluation and security' },
+};
+const TRACK_IDS = Object.keys(TRACKS);
+
+// ─── SEED DATA ───────────────────────────────────────────────────────────────
+// Mirrors the roadmap in index.html:
+//   AI Infra track = the four Open Discussion days, agenda = the topics they review
+//   AI track       = one review session per AI-focused stage, agenda = that stage's topics
+// Dates match the roadmap's own schedule (weekdays from Mon 10 Aug 2026, 26 Aug off).
+const SEED = [
+  // ── AI Infra — Open Discussions ─────────────────────────
+  { id:'disc-d05', track:'infra', title:'Open Discussion — Review: Day 1-4', date:'2026-08-14', start:'15:00', duration:90,
+    host:'Team', mode:'onsite', location:'', status:'planned',
+    tags:['open-discussion','day-1-4'],
+    agenda:[
+      'Revisit: Linux Server Setup & Hardening',
+      'Revisit: Docker & Containerization',
+      'Revisit: GPU Drivers, CUDA & NVIDIA Container Toolkit',
+      'Revisit: Networking, VPN & Security Basics',
+      'Revisit: Kubernetes Basics with k3s',
+      'Revisit: Ollama — Your First Local LLM',
+      'Revisit: Embedding Models — Choosing & Benchmarking',
+      'Revisit: vLLM — Production Inference Server',
+      'Revisit: Quantization — Fitting Big Models on Your GPU',
+    ] },
+  { id:'disc-d10', track:'infra', title:'Open Discussion — Review: Day 5-9', date:'2026-08-21', start:'15:00', duration:90,
+    host:'Team', mode:'onsite', location:'', status:'planned',
+    tags:['open-discussion','day-5-9'],
+    agenda:[
+      'Revisit: AI Gateway with LiteLLM',
+      'Revisit: Inference Stack Integration Day',
+      'Revisit: High Availability & Failover for Inference',
+      'Revisit: Docker Registry, Image Distribution & Air-Gapped Deployment',
+      'Revisit: PDF Parsing & Document Ingestion',
+      'Revisit: Qdrant Vector Database',
+      'Revisit: RAG Pipeline — Core Implementation',
+      'Revisit: Re-ranking & Retrieval Quality',
+      'Revisit: FastAPI Service — Document Analyzer API',
+      'Revisit: Multi-document & Multi-tenant Support',
+      'Revisit: Conversational Memory & Multi-turn Q&A',
+    ] },
+  { id:'disc-d15', track:'infra', title:'Open Discussion — Review: Day 10-14', date:'2026-08-31', start:'15:00', duration:90,
+    host:'Team', mode:'onsite', location:'', status:'planned',
+    tags:['open-discussion','day-10-14'],
+    agenda:[
+      'Revisit: LangGraph Agentic Flows',
+      'Revisit: CrewAI — Multi-Agent Alternative Framework',
+      'Revisit: MCP — Model Context Protocol',
+      'Revisit: Frontend — Web UI for Document Analyzer',
+      'Revisit: Langfuse — LLM Observability',
+      'Revisit: Prometheus + Grafana Monitoring',
+      'Revisit: RAGAS — Evaluation Pipeline',
+      'Revisit: OWASP LLM Security — Prompt Injection & PII',
+      'Revisit: JWT Auth, RBAC & Audit Logs',
+      'Revisit: Secrets Management with Vault',
+      'Revisit: Backup & Disaster Recovery for AI Infrastructure',
+    ] },
+  { id:'disc-d17', track:'infra', title:'Open Discussion — Overall AI Infra Plan', date:'2026-09-02', start:'10:00', duration:180,
+    host:'Team', mode:'onsite', location:'', status:'planned',
+    tags:['open-discussion','wrap-up','architecture'],
+    agenda:[
+      'Walk the full architecture end to end',
+      'Stage 1 — Infrastructure Foundation',
+      'Stage 2 — Model Serving & Inference',
+      'Stage 3 — RAG Pipeline',
+      'Stage 4 — Security & LLMOps',
+      'Stage 5 — Production & PoC Delivery',
+      'What breaks first under real client load?',
+    ] },
+
+  // ── AI — stage reviews ──────────────────────────────────
+  { id:'ai-stage2', track:'ai', title:'Model Serving & Inference — stage review', date:'2026-08-17', start:'11:00', duration:120,
+    host:'Team', mode:'onsite', location:'', status:'planned',
+    tags:['stage-2','inference','models'],
+    agenda:[
+      'Ollama — Your First Local LLM',
+      'Embedding Models — Choosing & Benchmarking',
+      'vLLM — Production Inference Server',
+      'Quantization — Fitting Big Models on Your GPU',
+      'AI Gateway with LiteLLM',
+      'Inference Stack Integration Day',
+      'High Availability & Failover for Inference',
+      'Docker Registry, Image Distribution & Air-Gapped Deployment',
+    ] },
+  { id:'ai-stage3', track:'ai', title:'RAG Pipeline — stage review', date:'2026-08-24', start:'11:00', duration:180,
+    host:'Team', mode:'onsite', location:'', status:'planned',
+    tags:['stage-3','rag','agents'],
+    agenda:[
+      'PDF Parsing & Document Ingestion',
+      'Qdrant Vector Database',
+      'RAG Pipeline — Core Implementation',
+      'Re-ranking & Retrieval Quality',
+      'FastAPI Service — Document Analyzer API',
+      'Multi-document & Multi-tenant Support',
+      'Conversational Memory & Multi-turn Q&A',
+      'LangGraph Agentic Flows',
+      'CrewAI — Multi-Agent Alternative Framework',
+      'MCP — Model Context Protocol',
+      'Frontend — Web UI for Document Analyzer',
+    ] },
+  { id:'ai-stage4', track:'ai', title:'Security & LLMOps — stage review', date:'2026-08-31', start:'11:00', duration:120,
+    host:'Team', mode:'onsite', location:'', status:'planned',
+    tags:['stage-4','security','llmops'],
+    agenda:[
+      'Langfuse — LLM Observability',
+      'Prometheus + Grafana Monitoring',
+      'RAGAS — Evaluation Pipeline',
+      'OWASP LLM Security — Prompt Injection & PII',
+      'JWT Auth, RBAC & Audit Logs',
+      'Secrets Management with Vault',
+      'Backup & Disaster Recovery for AI Infrastructure',
+      'Data Governance & Compliance Basics',
+    ] },
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+// Bumped to v2 when the placeholder sessions were replaced with the
+// roadmap-derived ones — v1 data stays stale in browsers otherwise.
+const STORAGE_KEY = 'ai-sessions-v2';
+let sessions = load();
+let filters = { track: 'all', status: 'all', q: '' };
+let editingId = null;
+let expanded = new Set();
+let lastDeleted = null;
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return SEED.map(s => ({ ...s }));
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : SEED.map(s => ({ ...s }));
+  } catch (e) {
+    return SEED.map(s => ({ ...s }));
+  }
+}
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions)); }
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function parseDate(iso) {
+  const [y,m,d] = String(iso || '').split('-').map(Number);
+  return (y && m && d) ? new Date(y, m-1, d) : null;
+}
+function fmtTime(hhmm) {
+  if (!hhmm) return '';
+  const [h, m] = hhmm.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+function endTime(hhmm, mins) {
+  if (!hhmm) return '';
+  const [h, m] = hhmm.split(':').map(Number);
+  const total = h * 60 + m + Number(mins || 0);
+  return fmtTime(`${String(Math.floor(total/60) % 24).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`);
+}
+function fmtDuration(mins) {
+  const n = Number(mins) || 0;
+  const h = Math.floor(n / 60), m = n % 60;
+  if (h && m) return `${h}h ${m}m`;
+  if (h) return `${h}h`;
+  return `${m}m`;
+}
+function daysFromToday(iso) {
+  const d = parseDate(iso); if (!d) return null;
+  const t = parseDate(todayISO());
+  return Math.round((d - t) / 86400000);
+}
+function relativeDay(iso) {
+  const n = daysFromToday(iso);
+  if (n === null) return '';
+  if (n === 0) return 'Today';
+  if (n === 1) return 'Tomorrow';
+  if (n === -1) return 'Yesterday';
+  if (n > 1) return `in ${n} days`;
+  return `${Math.abs(n)} days ago`;
+}
+// A session's display status blends its stored status with the calendar
+function effectiveStatus(s) {
+  if (s.status === 'done') return 'done';
+  if (s.status === 'cancelled') return 'cancelled';
+  const n = daysFromToday(s.date);
+  if (n === 0) return 'today';
+  if (n !== null && n < 0) return 'overdue';
+  return 'upcoming';
+}
+const STATUS_LABEL = { upcoming:'Upcoming', today:'Today', done:'Completed', cancelled:'Cancelled', overdue:'Missed' };
+function sortKey(s) { return `${s.date || '9999-99-99'} ${s.start || '99:99'}`; }
+function initials(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+}
+function isURL(s) { return /^https?:\/\//i.test(String(s || '')); }
+function uid() { return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+// ─── FILTERING ───────────────────────────────────────────────────────────────
+function visibleSessions(trackId) {
+  const q = filters.q.trim().toLowerCase();
+  return sessions
+    .filter(s => s.track === trackId)
+    .filter(s => {
+      if (filters.status === 'all') return true;
+      const eff = effectiveStatus(s);
+      if (filters.status === 'done') return eff === 'done';
+      return eff === 'upcoming' || eff === 'today' || eff === 'overdue';
+    })
+    .filter(s => {
+      if (!q) return true;
+      const hay = [s.title, s.host, s.location, (s.tags || []).join(' '), (s.agenda || []).join(' ')].join(' ').toLowerCase();
+      return hay.includes(q);
+    })
+    .sort((a, b) => {
+      const closed = x => (x.status === 'done' || x.status === 'cancelled') ? 1 : 0;
+      if (closed(a) !== closed(b)) return closed(a) - closed(b);
+      return sortKey(a).localeCompare(sortKey(b));
+    });
+}
+
+// ─── SIDEBAR FILTERS ─────────────────────────────────────────────────────────
+function renderFilters() {
+  const trackWrap = document.getElementById('track-filters');
+  const counts = { all: sessions.length };
+  TRACK_IDS.forEach(t => counts[t] = sessions.filter(s => s.track === t).length);
+
+  const rows = [{ id:'all', label:'All sessions' }]
+    .concat(TRACK_IDS.map(t => ({ id:t, label: TRACKS[t].name })));
+
+  trackWrap.innerHTML = rows.map(r => `
+    <button class="filter-item${filters.track === r.id ? ' active' : ''}" data-track="${r.id}" onclick="setTrackFilter('${r.id}')">
+      <span class="fi-swatch"></span>
+      <span class="fi-label">${esc(r.label)}</span>
+      <span class="fi-count">${counts[r.id]}</span>
+    </button>
+  `).join('');
+
+  const statusWrap = document.getElementById('status-filters');
+  const eff = sessions.map(effectiveStatus);
+  const sCounts = {
+    all: sessions.length,
+    upcoming: eff.filter(e => e === 'upcoming' || e === 'today' || e === 'overdue').length,
+    done: eff.filter(e => e === 'done').length,
+  };
+  const sRows = [
+    { id:'all', label:'Everything' },
+    { id:'upcoming', label:'Upcoming' },
+    { id:'done', label:'Completed' },
+  ];
+  statusWrap.innerHTML = sRows.map(r => `
+    <button class="filter-item${filters.status === r.id ? ' active' : ''}" onclick="setStatusFilter('${r.id}')">
+      <span class="fi-swatch" style="border-color:var(--border2)"></span>
+      <span class="fi-label">${esc(r.label)}</span>
+      <span class="fi-count">${sCounts[r.id]}</span>
+    </button>
+  `).join('');
+
+  document.querySelectorAll('#view-seg .seg-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.status === filters.status);
+  });
+  document.getElementById('crumb-scope').textContent =
+    filters.track === 'all' ? 'All tracks' : TRACKS[filters.track].name;
+}
+
+window.setTrackFilter = function(id) { filters.track = id; render(); };
+window.setStatusFilter = function(id) { filters.status = id; render(); };
+
+// ─── STATS ───────────────────────────────────────────────────────────────────
+function renderStats() {
+  const eff = sessions.map(effectiveStatus);
+  const upcoming = eff.filter(e => e === 'upcoming' || e === 'today').length;
+  const done = eff.filter(e => e === 'done').length;
+  const hours = sessions.reduce((a, s) => a + (Number(s.duration) || 0), 0) / 60;
+  const doneHours = sessions.filter(s => s.status === 'done').reduce((a, s) => a + (Number(s.duration) || 0), 0) / 60;
+
+  document.getElementById('ss-upcoming').textContent = upcoming;
+  document.getElementById('ss-done').textContent = done;
+  document.getElementById('ss-hours').textContent = (Math.round(hours * 10) / 10);
+
+  const infra = sessions.filter(s => s.track === 'infra').length;
+  const ai = sessions.filter(s => s.track === 'ai').length;
+  const pct = sessions.length ? Math.round((done / sessions.length) * 100) : 0;
+
+  document.getElementById('stat-row').innerHTML = `
+    <div class="stat-tile">
+      <div class="st-lbl">Total sessions</div>
+      <div class="st-val">${sessions.length}</div>
+      <div class="st-sub">${infra} infra · ${ai} AI</div>
+    </div>
+    <div class="stat-tile">
+      <div class="st-lbl">Upcoming</div>
+      <div class="st-val" style="color:var(--blue)">${upcoming}</div>
+      <div class="st-sub">${eff.filter(e => e === 'today').length} scheduled today</div>
+    </div>
+    <div class="stat-tile">
+      <div class="st-lbl">Completed</div>
+      <div class="st-val" style="color:var(--green)">${done}</div>
+      <div class="st-sub">${pct}% of all sessions</div>
+    </div>
+    <div class="stat-tile">
+      <div class="st-lbl">Hours booked</div>
+      <div class="st-val">${Math.round(hours * 10) / 10}</div>
+      <div class="st-sub">${Math.round(doneHours * 10) / 10}h delivered</div>
+    </div>
+  `;
+}
+
+// ─── UP NEXT ─────────────────────────────────────────────────────────────────
+function renderUpNext() {
+  const slot = document.getElementById('upnext-slot');
+  const next = sessions
+    .filter(s => s.status === 'planned' && daysFromToday(s.date) !== null && daysFromToday(s.date) >= 0)
+    .sort((a, b) => sortKey(a).localeCompare(sortKey(b)))[0];
+
+  if (!next) { slot.innerHTML = ''; return; }
+  const t = TRACKS[next.track] || TRACKS.infra;
+  const n = daysFromToday(next.date);
+  const d = parseDate(next.date);
+  const when = d ? d.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' }) : '';
+
+  slot.innerHTML = `
+    <div class="upnext" style="border-left-color:var(${t.color})">
+      <div class="un-icon" style="background:var(${t.dim})">${t.icon}</div>
+      <div class="un-body">
+        <div class="un-label">Up next · ${esc(t.short)}</div>
+        <div class="un-title">${esc(next.title)}</div>
+        <div class="un-meta">
+          <span>${esc(when)}</span><span class="sep">·</span>
+          <span>${fmtTime(next.start)} → ${endTime(next.start, next.duration)}</span><span class="sep">·</span>
+          <span>${esc(next.location || (next.mode === 'online' ? 'Online' : 'Location TBD'))}</span>
+        </div>
+      </div>
+      <span class="un-count" style="background:var(${t.dim});color:var(${t.color})">
+        ${n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : `in ${n} days`}
+      </span>
+    </div>
+  `;
+}
+
+// ─── BOARDS ──────────────────────────────────────────────────────────────────
+function sessionCard(s) {
+  const t = TRACKS[s.track] || TRACKS.infra;
+  const eff = effectiveStatus(s);
+  const d = parseDate(s.date);
+  const dow = d ? d.toLocaleDateString('en-GB', { weekday:'short' }).toUpperCase() : '--';
+  const dayN = d ? String(d.getDate()).padStart(2,'0') : '--';
+  const mon = d ? d.toLocaleDateString('en-GB', { month:'short' }).toUpperCase() : '';
+  const isDone = s.status === 'done';
+  const hasDetail = (s.agenda && s.agenda.length) || s.location;
+  const isOpen = expanded.has(s.id);
+
+  const pillClass = { upcoming:'pill-upcoming', today:'pill-today', done:'pill-done', cancelled:'pill-cancelled', overdue:'pill-overdue' }[eff];
+
+  return `
+    <article class="s-card${isDone ? ' done' : ''}${s.status === 'cancelled' ? ' cancelled' : ''}${eff === 'today' ? ' today-card' : ''}" id="card-${esc(s.id)}">
+      <div class="s-date" style="${eff === 'today' ? `border-color:var(--amber);background:var(--amber-dim)` : ''}">
+        <div class="s-dow">${esc(dow)}</div>
+        <div class="s-day" style="color:var(${isDone ? '--muted' : t.color})">${esc(dayN)}</div>
+        <div class="s-mon">${esc(mon)}</div>
+      </div>
+
+      <div class="s-main">
+        <div class="s-top">
+          <h3 class="s-title">${esc(s.title)}</h3>
+          <span class="status-pill ${pillClass}">${STATUS_LABEL[eff]}</span>
+        </div>
+
+        <div class="s-meta">
+          <span>${fmtTime(s.start)} → ${endTime(s.start, s.duration)}</span>
+          <span class="sep"></span>
+          <span>${fmtDuration(s.duration)}</span>
+          <span class="sep"></span>
+          <span>${s.mode === 'online' ? '🌐 Online' : s.mode === 'hybrid' ? '🔀 Hybrid' : '📍 Onsite'}</span>
+          <span class="sep"></span>
+          <span>${esc(relativeDay(s.date))}</span>
+        </div>
+
+        ${s.host ? `
+          <div class="s-host">
+            <span class="s-avatar" style="background:var(${t.dim});color:var(${t.color})">${esc(initials(s.host))}</span>
+            <span>${esc(s.host)}</span>
+          </div>` : ''}
+
+        ${(s.tags && s.tags.length) ? `
+          <div class="s-tags">${s.tags.map(tag => `<span class="s-tag">${esc(tag)}</span>`).join('')}</div>` : ''}
+
+        ${hasDetail ? `
+          <button class="s-expand${isOpen ? ' open' : ''}" onclick="toggleExpand('${esc(s.id)}')">
+            <span class="chev">▼</span>
+            <span>${isOpen ? 'Hide details' : `Details${(s.agenda && s.agenda.length) ? ` · ${s.agenda.length} agenda items` : ''}`}</span>
+          </button>
+          <div class="s-agenda${isOpen ? ' open' : ''}">
+            ${(s.agenda && s.agenda.length) ? `
+              <div class="s-agenda-lbl">Agenda</div>
+              <ul>${s.agenda.map(a => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}
+            ${s.location ? (isURL(s.location)
+              ? `<a class="s-link" href="${esc(s.location)}" target="_blank" rel="noopener">🔗 ${esc(s.location)}</a>`
+              : `<div class="s-notes">📍 ${esc(s.location)}</div>`) : ''}
+          </div>` : ''}
+      </div>
+
+      ${isAdmin ? `
+        <div class="s-actions">
+          <button class="icon-btn ok${isDone ? ' is-on' : ''}" title="${isDone ? 'Mark as not done' : 'Mark complete'}" onclick="toggleDone('${esc(s.id)}')">✓</button>
+          <button class="icon-btn" title="Edit session" onclick="openModal(null,'${esc(s.id)}')">✎</button>
+          <button class="icon-btn del" title="Delete session" onclick="removeSession('${esc(s.id)}')">🗑</button>
+        </div>` : ''}
+    </article>
+  `;
+}
+
+function renderBoards() {
+  const wrap = document.getElementById('boards');
+  const shown = filters.track === 'all' ? TRACK_IDS : [filters.track];
+
+  wrap.innerHTML = shown.map(id => {
+    const t = TRACKS[id];
+    const list = visibleSessions(id);
+    const total = sessions.filter(s => s.track === id).length;
+    const filtering = filters.q.trim() || filters.status !== 'all';
+
+    const body = list.length
+      ? `<div class="timeline">${list.map(sessionCard).join('')}</div>`
+      : `<div class="timeline empty"><div class="empty">
+           <div class="empty-icon">${total ? '🔍' : t.icon}</div>
+           <div class="empty-title">${total ? 'Nothing matches this filter' : `No ${esc(t.short)} sessions yet`}</div>
+           <div class="empty-sub">${total
+             ? 'Clear the search or switch back to “All”.'
+             : isAdmin
+               ? `Add the first ${esc(t.short)} session to get the track moving.`
+               : `Nothing scheduled on this track yet — check back soon.`}</div>
+         </div></div>`;
+
+    return `
+      <section class="board board-${id}">
+        <div class="board-head">
+          <div class="board-icon" style="background:var(${t.dim})">${t.icon}</div>
+          <div>
+            <div class="board-title">${esc(t.name)}</div>
+            <div class="board-sub">${esc(t.desc)}</div>
+          </div>
+          <span class="board-count" style="background:var(${t.dim});color:var(${t.color})">
+            ${filtering ? `${list.length}/${total}` : total}
+          </span>
+        </div>
+        <div class="board-body">
+          ${body}
+          ${isAdmin ? `
+            <button class="add-inline" onclick="openModal('${id}')">
+              <span class="btn-plus">+</span> Add session to ${esc(t.short)}
+            </button>` : ''}
+        </div>
+      </section>
+    `;
+  }).join('');
+}
+
+// ─── CARD INTERACTIONS ───────────────────────────────────────────────────────
+window.toggleExpand = function(id) {
+  if (expanded.has(id)) expanded.delete(id); else expanded.add(id);
+  renderBoards();
+};
+
+window.toggleDone = function(id) {
+  if (!requireAdmin()) return;
+  const s = sessions.find(x => x.id === id);
+  if (!s) return;
+  s.status = s.status === 'done' ? 'planned' : 'done';
+  save();
+  render();
+  toast(s.status === 'done' ? 'Session marked complete' : 'Session reopened');
+};
+
+window.removeSession = function(id) {
+  if (!requireAdmin()) return;
+  const idx = sessions.findIndex(s => s.id === id);
+  if (idx === -1) return;
+  lastDeleted = { session: sessions[idx], index: idx };
+  sessions.splice(idx, 1);
+  save();
+  render();
+  toast('Session deleted', 'Undo', undoDelete);
+};
+
+function undoDelete() {
+  if (!lastDeleted) return;
+  sessions.splice(lastDeleted.index, 0, lastDeleted.session);
+  lastDeleted = null;
+  save();
+  render();
+  toast('Session restored');
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+const modal = document.getElementById('modal');
+const form = document.getElementById('session-form');
+// Explicit refs — `form.title` / `form.location` collide with built-in properties
+const F = {
+  title:    document.getElementById('f-title'),
+  date:     document.getElementById('f-date'),
+  start:    document.getElementById('f-start'),
+  duration: document.getElementById('f-duration'),
+  host:     document.getElementById('f-host'),
+  mode:     document.getElementById('f-mode'),
+  location: document.getElementById('f-location'),
+  agenda:   document.getElementById('f-agenda'),
+  tags:     document.getElementById('f-tags'),
+};
+let formTrack = 'infra';
+
+function renderTrackPick() {
+  document.getElementById('track-pick').innerHTML = TRACK_IDS.map(id => {
+    const t = TRACKS[id];
+    return `
+      <label class="tp-opt${formTrack === id ? ' sel-' + id : ''}" onclick="setFormTrack('${id}')">
+        <input type="radio" name="track" value="${id}" ${formTrack === id ? 'checked' : ''}/>
+        <span class="tp-icon" style="background:var(${t.dim})">${t.icon}</span>
+        <span>
+          <span class="tp-name">${esc(t.short)}</span>
+          <span class="tp-desc">${id === 'infra' ? 'Infrastructure track' : 'Model & data track'}</span>
+        </span>
+      </label>
+    `;
+  }).join('');
+}
+window.setFormTrack = function(id) { formTrack = id; renderTrackPick(); };
+
+window.openModal = function(track, editId) {
+  if (!isAdmin) { Auth.goToLogin('sessions.html'); return; }
+  editingId = editId || null;
+  const editing = editingId ? sessions.find(s => s.id === editingId) : null;
+
+  formTrack = editing ? editing.track : (track || 'infra');
+  renderTrackPick();
+
+  document.getElementById('modal-title').textContent = editing ? 'Edit session' : 'New session';
+  document.getElementById('modal-sub').textContent = editing
+    ? 'Update the details of this session'
+    : `Add a session to the ${TRACKS[formTrack].short} track`;
+  document.getElementById('delete-btn').style.display = editing ? 'inline-flex' : 'none';
+  document.getElementById('save-btn').textContent = editing ? 'Save changes' : 'Add session';
+
+  F.title.value    = editing ? editing.title : '';
+  F.date.value     = editing ? editing.date : todayISO();
+  F.start.value    = editing ? editing.start : '10:00';
+  F.duration.value = editing ? String(editing.duration) : '60';
+  F.host.value     = editing ? (editing.host || '') : '';
+  F.mode.value     = editing ? (editing.mode || 'onsite') : 'onsite';
+  F.location.value = editing ? (editing.location || '') : '';
+  F.agenda.value   = editing ? (editing.agenda || []).join('\n') : '';
+  F.tags.value     = editing ? (editing.tags || []).join(', ') : '';
+
+  F.title.classList.remove('invalid');
+  document.getElementById('title-hint').style.display = 'none';
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => F.title.focus(), 40);
+};
+
+window.closeModal = function() {
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+  editingId = null;
+};
+
+window.deleteCurrent = function() {
+  if (!editingId) return;
+  const id = editingId;
+  closeModal();
+  removeSession(id);
+};
+
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  if (!requireAdmin()) { closeModal(); return; }
+  const title = F.title.value.trim();
+  if (!title) {
+    F.title.classList.add('invalid');
+    document.getElementById('title-hint').style.display = 'block';
+    F.title.focus();
+    return;
+  }
+
+  const data = {
+    track: formTrack,
+    title,
+    date: F.date.value || todayISO(),
+    start: F.start.value || '10:00',
+    duration: Number(F.duration.value) || 60,
+    host: F.host.value.trim(),
+    mode: F.mode.value,
+    location: F.location.value.trim(),
+    agenda: F.agenda.value.split('\n').map(x => x.trim()).filter(Boolean),
+    tags: F.tags.value.split(',').map(x => x.trim()).filter(Boolean),
+  };
+
+  if (editingId) {
+    const s = sessions.find(x => x.id === editingId);
+    Object.assign(s, data);
+    toast('Session updated');
+  } else {
+    sessions.push({ id: uid(), status: 'planned', ...data });
+    toast(`Added to ${TRACKS[data.track].short}`);
+  }
+
+  save();
+  closeModal();
+  render();
+});
+
+modal.addEventListener('mousedown', e => { if (e.target === modal) closeModal(); });
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+let toastTimer = null;
+function toast(msg, actionLabel, action) {
+  const el = document.getElementById('toast');
+  el.innerHTML = `<span>${esc(msg)}</span>`;
+  if (actionLabel && action) {
+    const btn = document.createElement('button');
+    btn.textContent = actionLabel;
+    btn.onclick = () => { action(); hideToast(); };
+    el.appendChild(btn);
+  }
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 4200);
+}
+function hideToast() { document.getElementById('toast').classList.remove('show'); }
+
+// ─── SEARCH & SEGMENTED ──────────────────────────────────────────────────────
+document.getElementById('search').addEventListener('input', e => {
+  filters.q = e.target.value;
+  renderBoards();
+  renderFilters();
+});
+document.querySelectorAll('#view-seg .seg-btn').forEach(btn => {
+  btn.addEventListener('click', () => { filters.status = btn.dataset.status; render(); });
+});
+
+// ─── KEYBOARD ────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+  if (e.key === 'Escape') {
+    if (modal.classList.contains('open')) closeModal();
+    else if (typing && document.activeElement.id === 'search') { document.activeElement.value = ''; filters.q = ''; render(); }
+    return;
+  }
+  if (typing) return;
+  if ((e.key === 'n' || e.key === 'N') && isAdmin) { e.preventDefault(); openModal(); }
+  if (e.key === '/') { e.preventDefault(); document.getElementById('search').focus(); }
+});
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function render() {
+  renderFilters();
+  renderStats();
+  renderUpNext();
+  renderBoards();
+  Auth.renderFooter(document.getElementById('auth-slot'), {
+    onChange: () => { isAdmin = Auth.isAdmin(); document.body.classList.toggle('is-guest', !isAdmin); render(); }
+  });
+}
+
+(function initSub() {
+  const el = document.getElementById('sidebar-sub');
+  const d = new Date();
+  el.textContent = `Session planner · ${d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}`;
+  document.querySelector('.page-sub').textContent = isAdmin
+    ? 'Two parallel tracks — infrastructure work and AI/model work. Schedule a session in either track, mark it done when the room clears.'
+    : 'Two parallel tracks — infrastructure work and AI/model work. This is the shared read-only view; an admin keeps the schedule up to date.';
+})();
+
+render();
+</script>
+</body>
+</html>
