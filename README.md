@@ -70,7 +70,6 @@ Keep the same header row in Drive as in the CSV.
 | `title` | Homework title |
 | `description` | Optional. `` `backticks` `` render as inline code |
 | `date` | Optional `YYYY-MM-DD`, shown as-is (not a deadline). Blank = that day's plan date, if `day` is set |
-| `status` | `planned`, `in-progress` or `done` (also `submitted`) |
 | `link` | Optional `https://` link (submission form, repo, doc) |
 | `note` | Optional, e.g. reviewer feedback |
 

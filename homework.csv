@@ -1,5 +1,5 @@
-id,day,topic,title,description,date,status,link,note
-hw01,,,Data ETL and ingestion pipelines beyond PDF parsing,,,planned,,
-hw02,,,"Other vector databases for comparison (e.g. ChromaDB, pgvector, Milvus)",,,planned,,
-hw03,,,"GPU operations, capacity planning, and infrastructure as code (Terraform/Ansible, Helm)",,,planned,,
-hw04,,,"Computer vision or other workloads, as an optional track",,,planned,,
+id,day,topic,title,description,date,link,note
+hw01,,,Data ETL and ingestion pipelines beyond PDF parsing,,,,
+hw02,,,"Other vector databases for comparison (e.g. ChromaDB, pgvector, Milvus)",,,,
+hw03,,,"GPU operations, capacity planning, and infrastructure as code (Terraform/Ansible, Helm)",,,,
+hw04,,,"Computer vision or other workloads, as an optional track",,,,

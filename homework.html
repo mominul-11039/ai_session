@@ -40,16 +40,6 @@
   .ps-link:hover { color: var(--text); }
   .ps-link.active { background: var(--bg2); color: var(--text); box-shadow: var(--shadow-sm); }
 
-  .sp-label { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 7px; }
-  .sp-label > span:first-child { font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
-  #sp-pct { font-family: var(--display); font-size: 22px; font-weight: 700; letter-spacing: -.03em; line-height: 1; }
-  .sp-bar-wrap { background: var(--bg3); border-radius: 99px; height: 5px; overflow: hidden; }
-  .sp-bar { background: var(--text); height: 5px; border-radius: 99px; transition: width .35s; }
-  .sp-stats { display: flex; margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
-  .sp-stat { flex: 1; border-right: 1px solid var(--border); padding: 8px 6px; text-align: center; }
-  .sp-stat:last-child { border-right: 0; }
-  .sp-stat-num { font-family: var(--mono); font-size: 15px; font-weight: 600; line-height: 1.2; }
-  .sp-stat-lbl { font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: .07em; text-transform: uppercase; margin-top: 2px; }
 
   .sidebar-nav { flex: 1; padding: 14px 12px 24px; }
   .filter-label { font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); padding: 0 8px 8px; }
@@ -86,8 +76,6 @@
   .day-date { font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
 
   .hw-card { background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--border2); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 10px; box-shadow: var(--shadow-sm); }
-  .hw-card.done { border-left-color: var(--green); }
-  .hw-card.in-progress { border-left-color: var(--amber); }
   .hw-top { display: flex; align-items: flex-start; gap: 12px; }
   .hw-main { flex: 1; min-width: 0; }
   .hw-topic { font-family: var(--mono); font-size: 10px; color: var(--dim); letter-spacing: .02em; margin-bottom: 3px; }
@@ -124,19 +112,10 @@
           <div class="sidebar-sub">Homework</div>
         </div>
       </div>
-      <div class="page-switch">
+      <div class="page-switch" style="margin-bottom:0">
         <a class="ps-link" href="sessions.html">Sessions</a>
         <a class="ps-link" href="index.html">AI-Infra Roadmap</a>
         <a class="ps-link active" href="homework.html" aria-current="page">Homework</a>
-      </div>
-      <div>
-        <div class="sp-label"><span>Homework done</span><span id="sp-pct">0%</span></div>
-        <div class="sp-bar-wrap"><div class="sp-bar" id="sp-bar" style="width:0%"></div></div>
-        <div class="sp-stats">
-          <div class="sp-stat"><div class="sp-stat-num" id="sp-done">0</div><div class="sp-stat-lbl">Done</div></div>
-          <div class="sp-stat"><div class="sp-stat-num" id="sp-doing">0</div><div class="sp-stat-lbl">In progress</div></div>
-          <div class="sp-stat"><div class="sp-stat-num" id="sp-left">0</div><div class="sp-stat-lbl">Left</div></div>
-        </div>
       </div>
     </div>
     <nav class="sidebar-nav" id="filters"></nav>
@@ -147,7 +126,7 @@
     <div class="main-header">
       <div class="breadcrumb">AI Infra Engineer › Homework</div>
       <div class="page-title" id="page-title">All homework</div>
-      <div class="page-desc">Assignments for the program. Status comes from the data source, not this page.</div>
+      <div class="page-desc">Assignments for the program.</div>
     </div>
     <div class="main-body" id="main-body"></div>
   </main>
@@ -155,7 +134,7 @@
 
 <script>
 // ─── HOMEWORK SOURCE ────────────────────────────────────────────────────────
-// Columns: id | day | topic | title | description | date | status | link | note
+// Columns: id | day | topic | title | description | date | link | note
 // `day` and `date` are optional. `date` is YYYY-MM-DD; when blank but `day` is
 // set, the plan date of that day is shown. Neither is a deadline.
 // To read from Google Drive instead, change HOMEWORK_SOURCE — see shared.js.
@@ -175,6 +154,14 @@ function loadLocal() {
   } catch (e) { return []; }
 }
 
+/** Accepts YYYY-MM-DD or the Sheet's M/D/YYYY (e.g. 11/18/2026). */
+function toISODate(raw) {
+  const s = String(raw || '').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
+  return m ? `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}` : '';
+}
+
 function normalize(r, i) {
   const day = parseInt(r.day, 10);
   const planDate = Number.isFinite(day) && day > 0 ? planDates[day - 1] : null;
@@ -184,8 +171,7 @@ function normalize(r, i) {
     topic: r.topic || '',
     title: r.title || '(untitled)',
     description: r.description || '',
-    date: /^\d{4}-\d{2}-\d{2}$/.test(r.date || '') ? r.date : (planDate ? toISO(planDate) : ''),
-    status: normalizeStatus(r.status),
+    date: toISODate(r.date || r.due) || (planDate ? toISO(planDate) : ''),
     link: /^https?:\/\//i.test(r.link || '') ? r.link : '',
     note: r.note || '',
   };
@@ -246,17 +232,6 @@ function visible() {
   return homework.filter(h => String(h.day) === filter);
 }
 
-function renderStats() {
-  const done = homework.filter(h => h.status === 'done').length;
-  const doing = homework.filter(h => h.status === 'in-progress').length;
-  const pct = homework.length ? Math.round((done / homework.length) * 100) : 0;
-  document.getElementById('sp-pct').textContent = pct + '%';
-  document.getElementById('sp-bar').style.width = pct + '%';
-  document.getElementById('sp-done').textContent = done;
-  document.getElementById('sp-doing').textContent = doing;
-  document.getElementById('sp-left').textContent = homework.length - done - doing;
-}
-
 function renderFilters() {
   const dayNums = [...new Set(homework.map(h => h.day).filter(d => d != null))].sort((a, b) => a - b);
   const items = [
@@ -271,26 +246,18 @@ function renderFilters() {
   nav.querySelectorAll('.filter-btn').forEach(b => b.onclick = () => { filter = b.dataset.key; render(); });
 }
 
-const STATUS_VIEW = {
-  done:          { label: '✓ Done',        c: '--green', d: '--green-dim', b: '--green-bg' },
-  'in-progress': { label: '◐ In progress', c: '--amber', d: '--amber-dim', b: '--amber-bg' },
-  planned:       { label: '○ Not started', c: '--muted', d: '--bg3',       b: '--border' },
-};
-
 function card(h) {
-  const sv = STATUS_VIEW[h.status];
   return `
-    <div class="hw-card ${h.status}">
+    <div class="hw-card">
       <div class="hw-top"><div class="hw-main">
         ${h.topic ? `<div class="hw-topic">${escHtml(h.topic)}</div>` : ''}
         <div class="hw-title">${escHtml(h.title)}</div>
         ${h.description ? `<div class="hw-desc">${richText(h.description)}</div>` : ''}
       </div></div>
-      <div class="hw-meta">
-        <span class="badge" style="background:var(${sv.d});color:var(${sv.c});border-color:var(${sv.b})">${sv.label}</span>
+      ${h.date || h.link ? `<div class="hw-meta">
         ${h.date ? `<span class="badge" style="background:var(--bg3);color:var(--muted);border-color:var(--border)">${fmtDate(h.date)}</span>` : ''}
         ${h.link ? `<a class="hw-link" href="${escHtml(h.link)}" target="_blank" rel="noopener">Open link ↗</a>` : ''}
-      </div>
+      </div>` : ''}
       ${h.note ? `<div class="hw-note">${richText(h.note)}</div>` : ''}
     </div>`;
 }
@@ -302,7 +269,7 @@ function renderMain() {
   const body = document.getElementById('main-body');
   if (!list.length) {
     body.innerHTML = `<div class="empty">${sync.state === 'loading' ? 'Loading homework…'
-      : homework.length ? 'Nothing here — everything in this view is done.' : 'No homework yet. Add rows to the homework CSV.'}</div>`;
+      : homework.length ? 'Nothing here.' : 'No homework yet. Add rows to the homework CSV.'}</div>`;
     return;
   }
   const groups = new Map();
@@ -321,7 +288,7 @@ function renderMain() {
     </section>`).join('');
 }
 
-function render() { renderFilters(); renderStats(); renderMain(); renderSync(); }
+function render() { renderFilters(); renderMain(); renderSync(); }
 
 render();
 pullHomework();
