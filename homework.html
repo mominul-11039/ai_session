@@ -88,7 +88,6 @@
   .hw-card { background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--border2); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 10px; box-shadow: var(--shadow-sm); }
   .hw-card.done { border-left-color: var(--green); }
   .hw-card.in-progress { border-left-color: var(--amber); }
-  .hw-card.overdue { border-left-color: var(--red); }
   .hw-top { display: flex; align-items: flex-start; gap: 12px; }
   .hw-main { flex: 1; min-width: 0; }
   .hw-topic { font-family: var(--mono); font-size: 10px; color: var(--dim); letter-spacing: .02em; margin-bottom: 3px; }
@@ -148,7 +147,7 @@
     <div class="main-header">
       <div class="breadcrumb">AI Infra Engineer › Homework</div>
       <div class="page-title" id="page-title">All homework</div>
-      <div class="page-desc">Assignments per plan day. Status comes from the data source, not this page.</div>
+      <div class="page-desc">Assignments for the program. Status comes from the data source, not this page.</div>
     </div>
     <div class="main-body" id="main-body"></div>
   </main>
@@ -156,8 +155,9 @@
 
 <script>
 // ─── HOMEWORK SOURCE ────────────────────────────────────────────────────────
-// Columns: id | day | topic | title | description | due | status | link | note
-// `due` is optional (YYYY-MM-DD); blank means the plan date of that day.
+// Columns: id | day | topic | title | description | date | status | link | note
+// `day` and `date` are optional. `date` is YYYY-MM-DD; when blank but `day` is
+// set, the plan date of that day is shown. Neither is a deadline.
 // To read from Google Drive instead, change HOMEWORK_SOURCE — see shared.js.
 // First tab of the Sheet is used; add tab: 'Name' to pick another.
 const HOMEWORK_SOURCE = { sheetId: '1sFsFX-Twdv97aWn6WrWU6t5KaiPPW5a3n_H_B4CnRvc' };
@@ -165,7 +165,7 @@ const STORAGE_KEY = 'ai-homework-v1';
 const planDates = buildPlanDates(40);
 
 let homework = loadLocal();
-let filter = 'all'; // 'all' | 'open' | day number as string
+let filter = 'all'; // 'all' | day number as string
 let sync = { state: 'loading', at: null, error: null };
 
 function loadLocal() {
@@ -184,7 +184,7 @@ function normalize(r, i) {
     topic: r.topic || '',
     title: r.title || '(untitled)',
     description: r.description || '',
-    due: /^\d{4}-\d{2}-\d{2}$/.test(r.due || '') ? r.due : (planDate ? toISO(planDate) : ''),
+    date: /^\d{4}-\d{2}-\d{2}$/.test(r.date || '') ? r.date : (planDate ? toISO(planDate) : ''),
     status: normalizeStatus(r.status),
     link: /^https?:\/\//i.test(r.link || '') ? r.link : '',
     note: r.note || '',
@@ -233,7 +233,6 @@ function renderSync() {
   if (btn) btn.onclick = pullHomework;
 }
 
-function isOverdue(h) { return h.status !== 'done' && h.due && h.due < toISO(new Date()); }
 function fmtDate(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-').map(Number);
@@ -244,7 +243,6 @@ function richText(s) { return escHtml(s).replace(/`([^`]+)`/g, '<code>$1</code>'
 
 function visible() {
   if (filter === 'all') return homework;
-  if (filter === 'open') return homework.filter(h => h.status !== 'done');
   return homework.filter(h => String(h.day) === filter);
 }
 
@@ -263,7 +261,6 @@ function renderFilters() {
   const dayNums = [...new Set(homework.map(h => h.day).filter(d => d != null))].sort((a, b) => a - b);
   const items = [
     { key: 'all',  label: 'All homework', count: homework.length },
-    { key: 'open', label: 'Not done yet', count: homework.filter(h => h.status !== 'done').length },
     ...dayNums.map(d => ({ key: String(d), label: `Day ${d}`, count: homework.filter(h => h.day === d).length })),
   ];
   const nav = document.getElementById('filters');
@@ -282,9 +279,8 @@ const STATUS_VIEW = {
 
 function card(h) {
   const sv = STATUS_VIEW[h.status];
-  const overdue = isOverdue(h);
   return `
-    <div class="hw-card ${overdue ? 'overdue' : h.status}">
+    <div class="hw-card ${h.status}">
       <div class="hw-top"><div class="hw-main">
         ${h.topic ? `<div class="hw-topic">${escHtml(h.topic)}</div>` : ''}
         <div class="hw-title">${escHtml(h.title)}</div>
@@ -292,9 +288,7 @@ function card(h) {
       </div></div>
       <div class="hw-meta">
         <span class="badge" style="background:var(${sv.d});color:var(${sv.c});border-color:var(${sv.b})">${sv.label}</span>
-        ${h.due ? `<span class="badge" style="${overdue
-          ? 'background:var(--red-dim);color:var(--red);border-color:var(--red-bg)'
-          : 'background:var(--bg3);color:var(--muted);border-color:var(--border)'}">${overdue ? 'Overdue · ' : 'Due '}${fmtDate(h.due)}</span>` : ''}
+        ${h.date ? `<span class="badge" style="background:var(--bg3);color:var(--muted);border-color:var(--border)">${fmtDate(h.date)}</span>` : ''}
         ${h.link ? `<a class="hw-link" href="${escHtml(h.link)}" target="_blank" rel="noopener">Open link ↗</a>` : ''}
       </div>
       ${h.note ? `<div class="hw-note">${richText(h.note)}</div>` : ''}
@@ -302,7 +296,7 @@ function card(h) {
 }
 
 function renderMain() {
-  const titles = { all: 'All homework', open: 'Not done yet' };
+  const titles = { all: 'All homework' };
   document.getElementById('page-title').textContent = titles[filter] || `Day ${filter} homework`;
   const list = visible();
   const body = document.getElementById('main-body');
@@ -320,7 +314,7 @@ function renderMain() {
   body.innerHTML = [...groups].map(([day, items]) => `
     <section class="day-group">
       <div class="day-head">
-        <div class="day-name">${day === 'none' ? 'Unscheduled' : `Day ${day}`}</div>
+        <div class="day-name">${day === 'none' ? 'General' : `Day ${day}`}</div>
         ${day !== 'none' && planDates[day - 1] ? `<div class="day-date">${fmtDate(toISO(planDates[day - 1]))}</div>` : ''}
       </div>
       ${items.map(card).join('')}

@@ -65,19 +65,18 @@ Keep the same header row in Drive as in the CSV.
 | Column | Notes |
 |---|---|
 | `id` | Any unique id, e.g. `hw01` |
-| `day` | Plan day 1–17. Groups the homework and sets the default due date |
+| `day` | Optional plan day 1–17. Groups the homework; blank = *General* |
 | `topic` | Optional topic name shown above the title |
 | `title` | Homework title |
 | `description` | Optional. `` `backticks` `` render as inline code |
-| `due` | Optional `YYYY-MM-DD`. Blank = that day's plan date |
+| `date` | Optional `YYYY-MM-DD`, shown as-is (not a deadline). Blank = that day's plan date, if `day` is set |
 | `status` | `planned`, `in-progress` or `done` (also `submitted`) |
 | `link` | Optional `https://` link (submission form, repo, doc) |
 | `note` | Optional, e.g. reviewer feedback |
 
 `status` is matched loosely: `Done`, `Completed`, `Submitted`, `yes`, `✅` all
 count as done; `WIP`, `doing`, `In Progress` count as in-progress. Anything
-else reads as not started. Homework that isn't done after its due date shows as
-**Overdue**.
+else reads as not started.
 
 ## Session planner — the `Sessions` tab
 
