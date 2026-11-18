@@ -1,0 +1,6 @@
+id,day,topic,title,description,due,status,link,note
+hw01,1,Linux Server Setup & Hardening,Harden a fresh VM,"Create a non-root sudo user, switch SSH to key-only auth, enable UFW with only port 22 open. Submit a screenshot of `ufw status` and your sshd_config diff.",,planned,,
+hw02,1,Docker & Containerization,Multi-service docker-compose,"Write a Dockerfile for a small API and a docker-compose.yml that runs it with Postgres on a shared network and named volume.",,planned,,
+hw03,1,"GPU Drivers, CUDA & NVIDIA Container Toolkit",GPU inside a container,"Run `nvidia-smi` inside a CUDA container and record driver version, CUDA version and VRAM.",,planned,,
+hw04,2,"Networking, VPN & Security Basics",WireGuard-only access,"Set up WireGuard so the server is reachable only over the VPN. Document the firewall rules you used.",,planned,,
+hw05,2,Kubernetes Basics with k3s,Deploy and scale on k3s,"Deploy a service on single-node k3s, scale it to 3 replicas, then roll out a new image version with kubectl.",,planned,,

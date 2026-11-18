@@ -8,13 +8,81 @@ GitHub Pages by `.github/workflows/static.yml` on every push to `main`.
 | [`index.html`](index.html) | The AI-Infra Roadmap — 35 topics and 4 open discussions across 17 days |
 | [`sessions.html`](sessions.html) | Session planner — AI Infra and AI tracks, read from the Sheet |
 | [`apps-script.gs`](apps-script.gs) | Backend to paste into the Google Sheet |
-| [`sessions.csv`](sessions.csv) | Starting data — upload this to Drive to create the Sheet |
+| [`sessions.csv`](sessions.csv) | Starting data — upload this to Drive to create the `Sessions` tab |
+| [`homework.html`](homework.html) | Homework — assignments per plan day, read from `homework.csv` |
+| [`shared.js`](shared.js) | Plan calendar + CSV / Google Sheet loader used by `index.html` and `homework.html` |
+| [`progress.csv`](progress.csv) | Topic completion for the roadmap — **read directly by `index.html`** |
+| [`homework.csv`](homework.csv) | Homework list — **read directly by `homework.html`** |
 
-## Where the session data lives
+## Where the data lives
 
-The roadmap is hard-coded in `index.html`. The **sessions are stored in a Google
-Sheet**, so the schedule is shared by everyone who opens the site and changing it
-needs no git push.
+| Page | Source constant | Default |
+|---|---|---|
+| `index.html` (roadmap progress) | `PROGRESS_SOURCE` | Google Sheet `1W1hQSfr…` (first tab) |
+| `homework.html` | `HOMEWORK_SOURCE` | Google Sheet `1sFsFX-T…` (first tab) |
+| `sessions.html` | `SHEET_ID` / `SHEET_ENDPOINT` | Google Sheet, `Sessions` tab |
+
+The roadmap *content* (topics, tasks, resources) is still hard-coded in
+`index.html`; only completion status comes from `progress.csv`.
+
+Edit the CSV, push, reload — the page reflects it. Each page caches the last
+good read in the browser, so it still shows something if the source is down.
+
+**Local preview:** `fetch()` can't read files from a `file://` page, so serve
+the folder: `python3 -m http.server` → open `http://localhost:8000`.
+
+### Moving a CSV to Google Drive later
+
+A plain Drive file link (`drive.google.com/file/d/…`) does **not** work — Drive
+sends no CORS header, so the browser blocks it. Use one of these instead and
+set it as the source constant:
+
+1. **Published CSV (simplest).** Upload the CSV, open it with Google Sheets,
+   *File → Share → Publish to web* → pick the tab → **CSV** → copy the link:
+   ```js
+   const PROGRESS_SOURCE = 'https://docs.google.com/spreadsheets/d/e/2PACX-…/pub?gid=0&single=true&output=csv';
+   ```
+   Google caches published output for a few minutes.
+2. **Shared Sheet.** Share the Sheet as *anyone with the link can view* and use
+   its id and tab name. Works even off `file://` and updates immediately:
+   ```js
+   const HOMEWORK_SOURCE = { sheetId: '1eAsfQmkfJoyx7cS9pznR2HbIvbo_QxwMvqudA2A5fCs', tab: 'Homework' };
+   ```
+
+Keep the same header row in Drive as in the CSV.
+
+### `progress.csv`
+
+| Column | Notes |
+|---|---|
+| `id` | Must match the roadmap id (`d01` … `d39`). Rows without one are skipped |
+| `day`, `title` | For your reference only — the page uses its own |
+| `status` | `planned`, `in-progress` or `done` |
+| `note` | Optional. Shown on that topic's page |
+
+### `homework.csv`
+
+| Column | Notes |
+|---|---|
+| `id` | Any unique id, e.g. `hw01` |
+| `day` | Plan day 1–17. Groups the homework and sets the default due date |
+| `topic` | Optional topic name shown above the title |
+| `title` | Homework title |
+| `description` | Optional. `` `backticks` `` render as inline code |
+| `due` | Optional `YYYY-MM-DD`. Blank = that day's plan date |
+| `status` | `planned`, `in-progress` or `done` (also `submitted`) |
+| `link` | Optional `https://` link (submission form, repo, doc) |
+| `note` | Optional, e.g. reviewer feedback |
+
+`status` is matched loosely: `Done`, `Completed`, `Submitted`, `yes`, `✅` all
+count as done; `WIP`, `doing`, `In Progress` count as in-progress. Anything
+else reads as not started. Homework that isn't done after its due date shows as
+**Overdue**.
+
+## Session planner — the `Sessions` tab
+
+The **sessions are stored in the Sheet** too, so the schedule is shared by
+everyone who opens the site and changing it needs no git push.
 
 There are two levels of connection, set by two constants near the top of the
 script in `sessions.html`:
@@ -37,6 +105,9 @@ page has. **Writing** still uses `fetch`, so it needs the page served over
 http(s) — on `file://` the sidebar says *Serve over http:// to save edits*.
 
 ## Connecting the Google Sheet
+
+Only the session planner needs the steps below. The roadmap's `Progress` tab is
+read-only and works with `SHEET_ID` alone — no Apps Script, no deployment.
 
 **1. Create the Sheet**
 
@@ -77,16 +148,18 @@ const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfy…/exec';
 Push once. From then on, every edit and delete writes to the Sheet — no
 further pushes needed.
 
-The sidebar always shows the current state:
+The sidebar of **both** pages always shows the current state:
 
 | Badge | Meaning |
 |---|---|
-| 🟢 *Google Sheet · Synced HH:MM* | Read and write, working |
-| 🟠 *Sheet — read only* | Reading the Sheet; page edits stay in this browser |
+| 🟢 *Google Sheet · Synced HH:MM* | Reading the Sheet fine (and writing, on `sessions.html` with `SHEET_ENDPOINT` set) |
+| 🟠 *Sheet — read only* | `sessions.html` only — reading the Sheet; page edits stay in this browser |
 | 🔴 *Sheet unreachable* | Could not read the Sheet; showing the last known data |
 | ⚪ *Local only* | No Sheet configured |
 
-## Sheet columns
+*Refresh* re-reads the Sheet without reloading the page.
+
+## `Sessions` tab columns
 
 | Column | Notes |
 |---|---|
@@ -121,3 +194,7 @@ If you need edits restricted to specific people, the options are:
 
 A passcode checked in JavaScript is not one of the options — anyone can read it
 in the page source.
+
+Roadmap progress does not have this problem: the site only ever reads the
+`Progress` tab, so changing a status needs edit access to the Sheet itself,
+which Google enforces.

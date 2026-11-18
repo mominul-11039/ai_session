@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Homework — AI Infra Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #F5F6F3; --bg2: #FFFFFF; --bg3: #F1F2EF;
+    --border: #E3E5E0; --border2: #CDD0C9;
+    --text: #14161A; --muted: #5C6270; --dim: #949AA3;
+    --blue: #2B59C3;  --blue-bg: #DCE4F7;  --blue-dim: #EDF1FB;
+    --green: #1B7A4B; --green-bg: #D6EFE0; --green-dim: #EAF7F0;
+    --amber: #96600F; --amber-bg: #F7E7C6; --amber-dim: #FBF3E2;
+    --red: #B03A3A;   --red-bg: #F7DCDC;   --red-dim: #FBEDED;
+    --radius-sm: 6px; --radius: 10px;
+    --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+    --display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --shadow-sm: 0 1px 2px rgba(20,22,26,.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--body); font-size: 14px; line-height: 1.6; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 3px; }
+
+  .app { display: grid; grid-template-columns: 288px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--bg2); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+
+  .sidebar-header { padding: 22px 18px 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo { display: flex; align-items: center; gap: 11px; margin-bottom: 16px; }
+  .logo-icon { width: 36px; height: 36px; background: var(--text); color: #fff; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .sidebar-title { font-family: var(--display); font-size: 14px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; }
+  .sidebar-sub { font-family: var(--mono); font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+
+  .page-switch { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg3); padding: 3px; margin-bottom: 16px; }
+  .ps-link { flex: 1; text-align: center; text-decoration: none; font-size: 12px; font-weight: 500; color: var(--muted); padding: 6px 8px; border-radius: 4px; transition: background .15s, color .15s; }
+  .ps-link:hover { color: var(--text); }
+  .ps-link.active { background: var(--bg2); color: var(--text); box-shadow: var(--shadow-sm); }
+
+  .sp-label { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 7px; }
+  .sp-label > span:first-child { font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+  #sp-pct { font-family: var(--display); font-size: 22px; font-weight: 700; letter-spacing: -.03em; line-height: 1; }
+  .sp-bar-wrap { background: var(--bg3); border-radius: 99px; height: 5px; overflow: hidden; }
+  .sp-bar { background: var(--text); height: 5px; border-radius: 99px; transition: width .35s; }
+  .sp-stats { display: flex; margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+  .sp-stat { flex: 1; border-right: 1px solid var(--border); padding: 8px 6px; text-align: center; }
+  .sp-stat:last-child { border-right: 0; }
+  .sp-stat-num { font-family: var(--mono); font-size: 15px; font-weight: 600; line-height: 1.2; }
+  .sp-stat-lbl { font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: .07em; text-transform: uppercase; margin-top: 2px; }
+
+  .sidebar-nav { flex: 1; padding: 14px 12px 24px; }
+  .filter-label { font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); padding: 0 8px 8px; }
+  .filter-btn { width: 100%; display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: var(--radius-sm); border: 0; background: transparent; cursor: pointer; color: var(--muted); font: 500 12.5px var(--body); text-align: left; }
+  .filter-btn:hover { background: var(--bg3); color: var(--text); }
+  .filter-btn.active { background: var(--bg3); color: var(--text); }
+  .filter-count { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--dim); }
+
+  .sidebar-foot { padding: 12px; border-top: 1px solid var(--border); }
+  .sync-box { display: flex; align-items: center; gap: 9px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; }
+  .sync-box.ok    { background: var(--green-dim); border-color: var(--green-bg); }
+  .sync-box.busy  { background: var(--blue-dim);  border-color: var(--blue-bg); }
+  .sync-box.error { background: var(--red-dim);   border-color: var(--red-bg); }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); flex-shrink: 0; }
+  .sync-box.ok    .sync-dot { background: var(--green); }
+  .sync-box.busy  .sync-dot { background: var(--blue); animation: pulse 1.1s ease-in-out infinite; }
+  .sync-box.error .sync-dot { background: var(--red); }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
+  .sync-text { flex: 1; min-width: 0; }
+  .sync-title { font-size: 11.5px; font-weight: 600; line-height: 1.3; }
+  .sync-note { font-family: var(--mono); font-size: 9.5px; color: var(--muted); }
+  .sync-btn { font: 500 11px var(--body); color: var(--muted); background: var(--bg2); border: 1px solid var(--border2); border-radius: 5px; padding: 5px 9px; cursor: pointer; }
+  .sync-btn:hover { color: var(--text); }
+
+  .main-header { padding: 26px 36px 20px; border-bottom: 1px solid var(--border); background: rgba(245,246,243,.86); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; }
+  .breadcrumb { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+  .page-title { font-family: var(--display); font-size: 27px; font-weight: 700; line-height: 1.15; letter-spacing: -.025em; }
+  .page-desc { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .main-body { padding: 26px 36px 60px; max-width: 940px; }
+
+  .day-group { margin-bottom: 26px; }
+  .day-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+  .day-name { font-family: var(--display); font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  .day-date { font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
+
+  .hw-card { background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--border2); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 10px; box-shadow: var(--shadow-sm); }
+  .hw-card.done { border-left-color: var(--green); }
+  .hw-card.in-progress { border-left-color: var(--amber); }
+  .hw-card.overdue { border-left-color: var(--red); }
+  .hw-top { display: flex; align-items: flex-start; gap: 12px; }
+  .hw-main { flex: 1; min-width: 0; }
+  .hw-topic { font-family: var(--mono); font-size: 10px; color: var(--dim); letter-spacing: .02em; margin-bottom: 3px; }
+  .hw-title { font-size: 14px; font-weight: 600; letter-spacing: -.005em; }
+  .hw-desc { font-size: 12.5px; color: var(--muted); line-height: 1.65; margin-top: 4px; }
+  .hw-desc code { font-family: var(--mono); font-size: 11.5px; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; }
+  .hw-meta { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+  .badge { font-family: var(--mono); padding: 3px 9px; border-radius: 5px; font-size: 10.5px; font-weight: 500; white-space: nowrap; border: 1px solid; }
+  .hw-link { font-size: 12px; font-weight: 500; color: var(--blue); text-decoration: none; }
+  .hw-link:hover { text-decoration: underline; }
+  .hw-note { font-size: 12.5px; color: var(--muted); margin-top: 9px; padding-left: 11px; border-left: 2px solid var(--border2); }
+
+  .empty { background: var(--bg2); border: 1px dashed var(--border2); border-radius: var(--radius); padding: 28px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  @media (max-width: 860px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .main-header { padding: 20px 16px 16px; }
+    .main-body { padding: 22px 16px 48px; }
+    .page-title { font-size: 22px; }
+  }
+</style>
+<script src="shared.js"></script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon">🧠</div>
+        <div>
+          <div class="sidebar-title">AI Infra Engineer</div>
+          <div class="sidebar-sub">Homework</div>
+        </div>
+      </div>
+      <div class="page-switch">
+        <a class="ps-link" href="sessions.html">Sessions</a>
+        <a class="ps-link" href="index.html">AI-Infra Roadmap</a>
+        <a class="ps-link active" href="homework.html" aria-current="page">Homework</a>
+      </div>
+      <div>
+        <div class="sp-label"><span>Homework done</span><span id="sp-pct">0%</span></div>
+        <div class="sp-bar-wrap"><div class="sp-bar" id="sp-bar" style="width:0%"></div></div>
+        <div class="sp-stats">
+          <div class="sp-stat"><div class="sp-stat-num" id="sp-done">0</div><div class="sp-stat-lbl">Done</div></div>
+          <div class="sp-stat"><div class="sp-stat-num" id="sp-doing">0</div><div class="sp-stat-lbl">In progress</div></div>
+          <div class="sp-stat"><div class="sp-stat-num" id="sp-left">0</div><div class="sp-stat-lbl">Left</div></div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="filters"></nav>
+    <div class="sidebar-foot"><div id="sync-slot"></div></div>
+  </aside>
+
+  <main class="main">
+    <div class="main-header">
+      <div class="breadcrumb">AI Infra Engineer › Homework</div>
+      <div class="page-title" id="page-title">All homework</div>
+      <div class="page-desc">Assignments per plan day. Status comes from the data source, not this page.</div>
+    </div>
+    <div class="main-body" id="main-body"></div>
+  </main>
+</div>
+
+<script>
+// ─── HOMEWORK SOURCE ────────────────────────────────────────────────────────
+// Columns: id | day | topic | title | description | due | status | link | note
+// `due` is optional (YYYY-MM-DD); blank means the plan date of that day.
+// To read from Google Drive instead, change HOMEWORK_SOURCE — see shared.js.
+// First tab of the Sheet is used; add tab: 'Name' to pick another.
+const HOMEWORK_SOURCE = { sheetId: '1sFsFX-Twdv97aWn6WrWU6t5KaiPPW5a3n_H_B4CnRvc' };
+const STORAGE_KEY = 'ai-homework-v1';
+const planDates = buildPlanDates(40);
+
+let homework = loadLocal();
+let filter = 'all'; // 'all' | 'open' | day number as string
+let sync = { state: 'loading', at: null, error: null };
+
+function loadLocal() {
+  try {
+    const v = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    return Array.isArray(v) ? v : [];
+  } catch (e) { return []; }
+}
+
+function normalize(r, i) {
+  const day = parseInt(r.day, 10);
+  const planDate = Number.isFinite(day) && day > 0 ? planDates[day - 1] : null;
+  return {
+    id: r.id || `row${i + 1}`,
+    day: Number.isFinite(day) ? day : null,
+    topic: r.topic || '',
+    title: r.title || '(untitled)',
+    description: r.description || '',
+    due: /^\d{4}-\d{2}-\d{2}$/.test(r.due || '') ? r.due : (planDate ? toISO(planDate) : ''),
+    status: normalizeStatus(r.status),
+    link: /^https?:\/\//i.test(r.link || '') ? r.link : '',
+    note: r.note || '',
+  };
+}
+
+async function pullHomework() {
+  setSync('loading');
+  try {
+    const rows = await loadRows(HOMEWORK_SOURCE);
+    homework = rows.filter(r => r.title || r.id).map(normalize);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(homework)); } catch (e) {}
+    setSync('synced');
+  } catch (err) {
+    setSync('error', err.message);
+  }
+  render();
+}
+
+function setSync(state, error) {
+  sync.state = state;
+  sync.error = error || null;
+  if (state === 'synced') sync.at = new Date();
+  renderSync();
+}
+
+function renderSync() {
+  const time = sync.at ? sync.at.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
+  const label = sourceLabel(HOMEWORK_SOURCE);
+  const view = {
+    loading: { cls: 'busy',  title: 'Loading…',                    note: `Reading ${label}`,             btn: null },
+    synced:  { cls: 'ok',    title: label,                         note: `Synced ${time}`,               btn: 'Refresh' },
+    error:   { cls: 'error', title: 'Homework source unreachable', note: 'Showing the last known data',  btn: 'Retry' },
+  }[sync.state];
+  const el = document.getElementById('sync-slot');
+  el.innerHTML = `
+    <div class="sync-box ${view.cls}" ${sync.error ? `title="${escHtml(sync.error)}"` : ''}>
+      <div class="sync-dot"></div>
+      <div class="sync-text">
+        <div class="sync-title">${escHtml(view.title)}</div>
+        <div class="sync-note">${escHtml(view.note)}</div>
+      </div>
+      ${view.btn ? `<button class="sync-btn" id="sync-action">${view.btn}</button>` : ''}
+    </div>`;
+  const btn = el.querySelector('#sync-action');
+  if (btn) btn.onclick = pullHomework;
+}
+
+function isOverdue(h) { return h.status !== 'done' && h.due && h.due < toISO(new Date()); }
+function fmtDate(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
+}
+// Escape first, then allow `inline code` from the CSV
+function richText(s) { return escHtml(s).replace(/`([^`]+)`/g, '<code>$1</code>'); }
+
+function visible() {
+  if (filter === 'all') return homework;
+  if (filter === 'open') return homework.filter(h => h.status !== 'done');
+  return homework.filter(h => String(h.day) === filter);
+}
+
+function renderStats() {
+  const done = homework.filter(h => h.status === 'done').length;
+  const doing = homework.filter(h => h.status === 'in-progress').length;
+  const pct = homework.length ? Math.round((done / homework.length) * 100) : 0;
+  document.getElementById('sp-pct').textContent = pct + '%';
+  document.getElementById('sp-bar').style.width = pct + '%';
+  document.getElementById('sp-done').textContent = done;
+  document.getElementById('sp-doing').textContent = doing;
+  document.getElementById('sp-left').textContent = homework.length - done - doing;
+}
+
+function renderFilters() {
+  const dayNums = [...new Set(homework.map(h => h.day).filter(d => d != null))].sort((a, b) => a - b);
+  const items = [
+    { key: 'all',  label: 'All homework', count: homework.length },
+    { key: 'open', label: 'Not done yet', count: homework.filter(h => h.status !== 'done').length },
+    ...dayNums.map(d => ({ key: String(d), label: `Day ${d}`, count: homework.filter(h => h.day === d).length })),
+  ];
+  const nav = document.getElementById('filters');
+  nav.innerHTML = `<div class="filter-label">Filter</div>` + items.map(i => `
+    <button class="filter-btn${filter === i.key ? ' active' : ''}" data-key="${escHtml(i.key)}">
+      ${escHtml(i.label)}<span class="filter-count">${i.count}</span>
+    </button>`).join('');
+  nav.querySelectorAll('.filter-btn').forEach(b => b.onclick = () => { filter = b.dataset.key; render(); });
+}
+
+const STATUS_VIEW = {
+  done:          { label: '✓ Done',        c: '--green', d: '--green-dim', b: '--green-bg' },
+  'in-progress': { label: '◐ In progress', c: '--amber', d: '--amber-dim', b: '--amber-bg' },
+  planned:       { label: '○ Not started', c: '--muted', d: '--bg3',       b: '--border' },
+};
+
+function card(h) {
+  const sv = STATUS_VIEW[h.status];
+  const overdue = isOverdue(h);
+  return `
+    <div class="hw-card ${overdue ? 'overdue' : h.status}">
+      <div class="hw-top"><div class="hw-main">
+        ${h.topic ? `<div class="hw-topic">${escHtml(h.topic)}</div>` : ''}
+        <div class="hw-title">${escHtml(h.title)}</div>
+        ${h.description ? `<div class="hw-desc">${richText(h.description)}</div>` : ''}
+      </div></div>
+      <div class="hw-meta">
+        <span class="badge" style="background:var(${sv.d});color:var(${sv.c});border-color:var(${sv.b})">${sv.label}</span>
+        ${h.due ? `<span class="badge" style="${overdue
+          ? 'background:var(--red-dim);color:var(--red);border-color:var(--red-bg)'
+          : 'background:var(--bg3);color:var(--muted);border-color:var(--border)'}">${overdue ? 'Overdue · ' : 'Due '}${fmtDate(h.due)}</span>` : ''}
+        ${h.link ? `<a class="hw-link" href="${escHtml(h.link)}" target="_blank" rel="noopener">Open link ↗</a>` : ''}
+      </div>
+      ${h.note ? `<div class="hw-note">${richText(h.note)}</div>` : ''}
+    </div>`;
+}
+
+function renderMain() {
+  const titles = { all: 'All homework', open: 'Not done yet' };
+  document.getElementById('page-title').textContent = titles[filter] || `Day ${filter} homework`;
+  const list = visible();
+  const body = document.getElementById('main-body');
+  if (!list.length) {
+    body.innerHTML = `<div class="empty">${sync.state === 'loading' ? 'Loading homework…'
+      : homework.length ? 'Nothing here — everything in this view is done.' : 'No homework yet. Add rows to the homework CSV.'}</div>`;
+    return;
+  }
+  const groups = new Map();
+  [...list].sort((a, b) => (a.day ?? 999) - (b.day ?? 999)).forEach(h => {
+    const k = h.day ?? 'none';
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(h);
+  });
+  body.innerHTML = [...groups].map(([day, items]) => `
+    <section class="day-group">
+      <div class="day-head">
+        <div class="day-name">${day === 'none' ? 'Unscheduled' : `Day ${day}`}</div>
+        ${day !== 'none' && planDates[day - 1] ? `<div class="day-date">${fmtDate(toISO(planDates[day - 1]))}</div>` : ''}
+      </div>
+      ${items.map(card).join('')}
+    </section>`).join('');
+}
+
+function render() { renderFilters(); renderStats(); renderMain(); renderSync(); }
+
+render();
+pullHomework();
+</script>
+</body>
+</html>
